@@ -26,6 +26,7 @@ let mainMenu_button_common = {
 let mainMenu_button_pvpGame = {
   index: 0,
   label: "mängija vs mängija",
+  onClick: () => state = STATE_IN_GAME,
 
   ...mainMenu_button_common,
   ...BUTTON_COMMON,
@@ -60,6 +61,7 @@ function setup() {
 function draw() {
   background(192);
 
+  push();
   switch(state) {
     case STATE_MAIN_MENU: {
       drawButton(mainMenu_button_pvpGame);
@@ -84,10 +86,11 @@ function draw() {
     };
     break;
     case STATE_IN_GAME: {
-
+      renderGame(); // in in-game.js
     };
     break;
   }
+  pop();
 }
 
 function drawButton(button) {
@@ -96,6 +99,9 @@ function drawButton(button) {
   // UPDATE
   if(mouseX >= x-w/2 && mouseX <= x+w/2 && mouseY >= y-h/2 && mouseY <= y+h/2) {
     button.scale = min(1.1, button.scale * 1.02);
+
+    // handle click events
+    if(mouseIsPressed && button.hasOwnProperty('onClick')) button.onClick();
   } else {
     button.scale = max(1, button.scale * 0.98);
   }
