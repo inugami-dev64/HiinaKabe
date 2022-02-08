@@ -12,12 +12,14 @@
         topLeftNeighbour: ref to Slot, 
         topRightNeighbour: ref to Slot, 
         bottomLeftNeighbour: ref to Slot, 
-        bottomRightNeighbour: ref to Slot
+        bottomRightNeighbour: ref to Slot,
+        leftNeighbour: ref to Slot,
+        rightNeighbour: ref to Slot,
     }
 */
 
 class Slot {    
-    constructor(x, y, color, topLeftNeighbour, topRightNeighbour, bottomLeftNeighbour, bottomRightNeighbour) {
+    constructor(x, y, color, topLeftNeighbour, topRightNeighbour, bottomLeftNeighbour, bottomRightNeighbour, leftNeighbour, rightNeighbour) {
         this.x = x;
         this.y = y;
         this.color = color;
@@ -25,6 +27,8 @@ class Slot {
         this.topRightNeighbour = topRightNeighbour;
         this.bottomLeftNeighbour = bottomLeftNeighbour;
         this.bottomRightNeighbour = bottomRightNeighbour;
+        this.leftNeighbour = leftNeighbour;
+        this.rightNeighbour = rightNeighbour;
     }
 }
 
@@ -114,6 +118,14 @@ function generateBoard() {
         ...rows[15],
         ...rows[16],
     ];
+    let playerSlots = [
+        rows[16][0],
+        rows[12][rows[12].length-1],
+        rows[4][rows[4].length-1],
+        rows[0][0],
+        rows[4][0],
+        rows[12][0],
+    ];
 
     // x: number
     // y: number
@@ -134,6 +146,60 @@ function generateBoard() {
             if((found = searchForSlot(slot.x + halfStepX, slot.y - stepY))) slot.topRightNeighbour = found;
             if((found = searchForSlot(slot.x - halfStepX, slot.y + stepY))) slot.bottomLeftNeighbour = found;
             if((found = searchForSlot(slot.x + halfStepX, slot.y + stepY))) slot.bottomRightNeighbour = found;
+        });
+    });
+
+    const collectNeighbours = (slot, ignoredSlots) => {
+        let slots = [];
+        if(slot.topLeftNeighbour && !slots.includes(slot.topLeftNeighbour) && !ignoredSlots.includes(slot.topLeftNeighbour))
+            slots.push(slot.topLeftNeighbour);
+        if(slot.topRightNeighbour && !slots.includes(slot.topRightNeighbour) && !ignoredSlots.includes(slot.topRightNeighbour))
+            slots.push(slot.topRightNeighbour);
+        if(slot.bottomLeftNeighbour && !slots.includes(slot.bottomLeftNeighbour) && !ignoredSlots.includes(slot.bottomLeftNeighbour))
+            slots.push(slot.bottomLeftNeighbour);
+        if(slot.bottomRightNeighbour && !slots.includes(slot.bottomRightNeighbour) && !ignoredSlots.includes(slot.bottomRightNeighbour))
+            slots.push(slot.bottomRightNeighbour);
+        if(slot.leftNeighbour && !slots.includes(slot.leftNeighbour) && !ignoredSlots.includes(slot.leftNeighbour))
+            slots.push(slot.leftNeighbour);
+        if(slot.rightNeighbour && !slots.includes(slot.rightNeighbour) && !ignoredSlots.includes(slot.rightNeighbour))
+            slots.push(slot.rightNeighbour);
+        
+        return slots;
+    };
+    
+    const collectSlotRows = (slot, rows) => {
+        let totalSlots = [];
+        let prevRow = [slot];
+
+        for(let i = 0; i < rows; i++) {
+            console.log('running on row:', prevRow);
+            let row = [];
+
+            prevRow.forEach((rowSlot) => {
+                row = row.concat(collectNeighbours(rowSlot, totalSlots));
+            });
+            
+            console.log('collected row:', row);
+            totalSlots = totalSlots.concat(prevRow);
+            prevRow = row;
+        };
+
+        return totalSlots;
+    };
+
+    // Identify player slots
+    let collectedSlots = [];
+    playerSlots.forEach((slot, i) => {
+        console.log('filling slot:', slot);
+        collectedSlots.push(
+            collectSlotRows(slot, 4)
+        );
+    });
+
+    // Color player slots
+    collectedSlots.forEach((slots, i) => {
+        slots.forEach((slot) => {
+            slot.color = 1+i;
         });
     });
 
@@ -168,10 +234,9 @@ function renderBoard(x, y, scale, rotation, board) {
         let c = sqr(radius/2);
 
         if(a + b < c) strokeWeight(4);
-        else {
-            if(slot.color) fill(360 / 6 * (slot.color - 1), 90, 90, 1.0);
-            else fill(0, 0, 100, 0.2);
-        }
+        
+        if(slot.color) fill(360 / 6 * (slot.color - 1), 90, 90, 1.0);
+        else fill(0, 0, 100, 0.2);
 
         if(a + b < c && mousePressed()) {
             slot.color = playerID + 1;
