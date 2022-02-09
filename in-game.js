@@ -234,7 +234,7 @@ function renderBoard(x, y, scale, rotation, board, gameInfo) {
         let b = sqr(mouseY - location.y - y);
         let c = sqr(radius/2);
 
-        if(a + b < c) strokeWeight(4);
+        if(a + b < c || gameInfo.turnTempData.pickedSlot == slot) strokeWeight(4);
         
         if(slot.color) fill(360 / 6 * (slot.color - 1), 90, 90, 1.0);
         else fill(0, 0, 100, 0.2);
