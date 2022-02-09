@@ -18,6 +18,6 @@
 
     Takes one turn for the given player.
 */
-function playTurn(board, playerID) {
+function playAITurn(board, playerID) {
 
 }

@@ -32,13 +32,16 @@ class Slot {
     }
 }
 
-// type: [Slot]
-let board = generateBoard();
-let round = 0;
-let playerID = 0;
-let rotation = 0;
-
+const GAME_STATE_NONE =  0;
+const GAME_STATE_PICK =  1;
+const GAME_STATE_MOVE =  2;
+const GAME_STATE_AWAIT = 3;
+const GAME_STATE_FINISHED = 4;
 const ZOOM_OUT_AMOUNT = 0.5;
+
+let board = generateBoard(); // type: [Slot]
+let gameInfo = initGame();
+let rotation = 0;
 
 // using _ig prefix to avoid overlappign names with ui.js
 let ig_mouseIsPressedLast = true;
@@ -191,9 +194,7 @@ function generateBoard() {
     let collectedSlots = [];
     playerSlots.forEach((slot, i) => {
         console.log('filling slot:', slot);
-        collectedSlots.push(
-            collectSlotRows(slot, 4)
-        );
+        collectedSlots.push(collectSlotRows(slot, 4));
     });
 
     // Color player slots
@@ -217,7 +218,7 @@ function generateBoard() {
 
     Draws game board.
  */
-function renderBoard(x, y, scale, rotation, board) {
+function renderBoard(x, y, scale, rotation, board, gameInfo) {
 
     stroke(0, 0, 0, 0.25);
     fill(0, 0, 100, 0.5);
@@ -239,8 +240,7 @@ function renderBoard(x, y, scale, rotation, board) {
         else fill(0, 0, 100, 0.2);
 
         if(a + b < c && mousePressed()) {
-            slot.color = playerID + 1;
-            console.log('button placed:', playerID);
+            if(gameInfo.playerSlotOnClick != undefined) gameInfo.playerSlotOnClick(slot);
         }
 
         // draw slot
@@ -255,6 +255,68 @@ function renderBoard(x, y, scale, rotation, board) {
     fill(0);
 }
 
+function initGame() {
+    return {
+        state: GAME_STATE_NONE,
+        currentPlayerID: 0,
+        turnTempData: {},
+        round: 0,
+        playerSlotOnClick: undefined,
+        players: [
+            { isAI: false },
+            { isAI: false },
+            { isAI: false },
+            { isAI: false },
+            { isAI: false },
+            { isAI: false },
+        ],
+    };
+}
+
+function gameStep(gameInfo) {
+    if(gameInfo.state == GAME_STATE_AWAIT) return;
+
+    if(gameInfo.players[gameInfo.currentPlayerID].isAI) {
+        playAITurn(board, gameInfo.currentPlayerID);
+        gameInfo.state = GAME_STATE_FINISHED;
+    } else {
+        if(gameInfo.state == GAME_STATE_NONE) {
+            gameInfo.state = GAME_STATE_PICK;
+        }
+
+        if(gameInfo.state == GAME_STATE_PICK) {
+            gameInfo.state = GAME_STATE_AWAIT;
+            gameInfo.playerSlotOnClick = (slot) => {
+                if(slot.color - 1 == gameInfo.currentPlayerID) {
+                    console.log('picked slot (by '+gameInfo.currentPlayerID+'):', slot);
+                    gameInfo.turnTempData = { pickedSlot: slot };
+                    gameInfo.state = GAME_STATE_MOVE;
+                }
+            };
+        } else if(gameInfo.state == GAME_STATE_MOVE) {
+            gameInfo.state = GAME_STATE_AWAIT;
+            gameInfo.playerSlotOnClick = (slot) => {
+                if(slot.color == 0) {
+                    console.log('moved to slot (by '+gameInfo.currentPlayerID+'):', slot);
+                    slot.color = gameInfo.currentPlayerID + 1;
+                    gameInfo.turnTempData.pickedSlot.color = 0;
+                    gameInfo.state = GAME_STATE_FINISHED;
+                    console.log('gameInfo after turn:', gameInfo);
+                }
+            };
+        }
+    }
+
+    if(gameInfo.state == GAME_STATE_FINISHED) {
+        // End turn
+        console.log('round ended');
+        gameInfo.turnTempData = {};
+        gameInfo.currentPlayerID = (gameInfo.currentPlayerID + 1) % 6; 
+        gameInfo.round++;
+        gameInfo.state = GAME_STATE_NONE;
+    }
+}
+
 function renderGame() {
     colorMode(HSB, 360, 100, 100, 1);
     angleMode(DEGREES);
@@ -264,15 +326,11 @@ function renderGame() {
     background(rotation % 360, 60, 100);
     
     let baseScale = min(windowWidth, windowHeight);
-    rotation += ((round / 6 * 360) - rotation) * 0.04;
-    // let zoomOut = baseScale * ZOOM_OUT_AMOUNT / 2 - abs((rotation % 60) / 60 * baseScale * ZOOM_OUT_AMOUNT - baseScale * ZOOM_OUT_AMOUNT / 2);
+    rotation += ((gameInfo.round / 6 * 360) - rotation) * 0.04;
     let zoomOut = sin((rotation % 60) / 60 * 180) * baseScale * ZOOM_OUT_AMOUNT;
-    renderBoard(windowWidth/2, windowHeight/2, baseScale - zoomOut, rotation, board);
+    renderBoard(windowWidth/2, windowHeight/2, baseScale - zoomOut, rotation, board, gameInfo);
 
-    if(mousePressed()) {
-        round++;
-        playerID = round % 6;
-    };
+    gameStep(gameInfo);
 
     ig_mouseIsPressedLast = mouseIsPressed;
 }
