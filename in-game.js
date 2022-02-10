@@ -255,6 +255,30 @@ function renderBoard(x, y, scale, rotation, board, gameInfo) {
     fill(0);
 }
 
+function isReachable(slot, target, board) {
+    if(target.color != 0) return;
+    if(
+        slot.topLeftNeighbour == target ||
+        slot.topRightNeighbour == target ||
+        slot.bottomLeftNeighbour == target ||
+        slot.bottomRightNeighbour == target ||
+        slot.leftNeighbour == target ||
+        slot.rightNeighbour == target
+    ) return true;
+
+    let slotBetween;
+    if(slot.topLeftNeighbour == target.bottomRightNeighbour) slotBetween = slot.topLeftNeighbour;
+    if(slot.topRightNeighbour == target.bottomLeftNeighbour) slotBetween = slot.topRightNeighbour;
+    if(slot.bottomLeftNeighbour == target.topRightNeighbour) slotBetween = slot.bottomLeftNeighbour;
+    if(slot.bottomRightNeighbour == target.topLeftNeighbour) slotBetween = slot.bottomRightNeighbour;
+    if(slot.leftNeighbour == target.rightNeighbour) slotBetween = slot.leftNeighbour;
+    if(slot.rightNeighbour == target.leftNeighbour) slotBetween = slot.rightNeighbour;
+
+    if(!slotBetween) return false;
+    if(slotBetween.color != 0) return true;
+    return false;
+}
+
 function initGame() {
     return {
         state: GAME_STATE_NONE,
@@ -297,11 +321,13 @@ function gameStep(gameInfo) {
             gameInfo.state = GAME_STATE_AWAIT;
             gameInfo.playerSlotOnClick = (slot) => {
                 if(slot.color == 0) {
-                    console.log('moved to slot (by '+gameInfo.currentPlayerID+'):', slot);
-                    slot.color = gameInfo.currentPlayerID + 1;
-                    gameInfo.turnTempData.pickedSlot.color = 0;
-                    gameInfo.state = GAME_STATE_FINISHED;
-                    console.log('gameInfo after turn:', gameInfo);
+                    if(isReachable(gameInfo.turnTempData.pickedSlot, slot, board)) {
+                        console.log('moved to slot (by '+gameInfo.currentPlayerID+'):', slot);
+                        slot.color = gameInfo.currentPlayerID + 1;
+                        gameInfo.turnTempData.pickedSlot.color = 0;
+                        gameInfo.state = GAME_STATE_FINISHED;
+                        console.log('gameInfo after turn:', gameInfo);
+                    }
                 }
             };
         }
