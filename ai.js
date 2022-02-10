@@ -14,10 +14,12 @@
 /**
     @param board: [Slot]            Game board (reference)
     @param playerID: number (0-5)   Player whose turn it is
+    @param playerSlots: [Slot]      Player slots (reference)
+    @param targetSlots: [Slot]      Target slots (reference)
     @returns void
 
     Takes one turn for the given player.
 */
-function playAITurn(board, playerID) {
+function playAITurn(board, playerID, playerSlots) {
 
 }
