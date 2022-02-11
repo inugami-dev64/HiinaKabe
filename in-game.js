@@ -39,7 +39,6 @@ const GAME_STATE_AWAIT = 3;
 const GAME_STATE_FINISHED = 4;
 const ZOOM_OUT_AMOUNT = 0.5;
 
-let board = generateBoard(); // type: [Slot]
 let gameInfo = initGame();
 let rotation = 0;
 
@@ -47,19 +46,11 @@ let rotation = 0;
 let ig_mouseIsPressedLast = true;
 
 /**
-    @returns [Slot]
+    @returns {board: [Slot], targetSlots: [[Slot]]}
 
-    Generates empty game board with no player tiles.
+    Generates empty game board with no player tiles. Returns an array with target slots for each player, where array index is playerID.
 */
 function generateBoard() {
-    /* 
-    let spectrumX = 1;
-    let spectrumY = 1;
-    let stepX = 1.0 / 14.0;
-    let stepY = 1.0 / 17.0;
-    let halfStepX = stepX / 2.0;
-    let halfStepY = stepY / 2.0; */
-
     let spectrumX = 14;
     let spectrumY = 17;
     let stepX = 1.0;
@@ -80,8 +71,7 @@ function generateBoard() {
         return arr;
     }
 
-    // Generate objects
-
+    // Generate slots
     let rows = [
         generateRow(1, spectrumX / 2 + halfStepX, stepY * 0 + halfStepY),
         generateRow(2, spectrumX / 2 + halfStepX, stepY * 1 + halfStepY),
@@ -204,12 +194,17 @@ function generateBoard() {
         });
     });
 
+    // Identify players' target slots
+    let targetSlots = [];
+    targetSlots.length = collectedSlots.length;
+    collectedSlots.forEach((slot, i) => targetSlots[(i+6) % 6] = slot);
+
     board.forEach(slot => {
-        slot.x /= 14.0;
-        slot.y /= 17.0;
+        slot.x /= spectrumX;
+        slot.y /= spectrumY;
     });
 
-    return board;
+    return {board, targetSlots};
 }
 
 /**
@@ -255,6 +250,10 @@ function renderBoard(x, y, scale, rotation, board, gameInfo) {
     fill(0);
 }
 
+function findPlayerSlots(board, playerID) {
+    return board.filter(slot => slot.color - 1 == playerID);
+}
+
 function isReachable(slot, target, board) {
     if(target.color != 0) return;
     if(
@@ -280,7 +279,10 @@ function isReachable(slot, target, board) {
 }
 
 function initGame() {
+    let boardData = generateBoard();
     return {
+        board: boardData.board,
+        targetSlots: boardData.targetSlots,
         state: GAME_STATE_NONE,
         currentPlayerID: 0,
         turnTempData: {},
@@ -288,11 +290,11 @@ function initGame() {
         playerSlotOnClick: undefined,
         players: [
             { isAI: false },
+            { isAI: true },
             { isAI: false },
+            { isAI: true },
             { isAI: false },
-            { isAI: false },
-            { isAI: false },
-            { isAI: false },
+            { isAI: true },
         ],
     };
 }
@@ -300,9 +302,22 @@ function initGame() {
 function gameStep(gameInfo) {
     if(gameInfo.state == GAME_STATE_AWAIT) return;
 
+    if(gameInfo.state == GAME_STATE_FINISHED) {
+        // End turn
+        console.log('round ended');
+        gameInfo.turnTempData = {};
+        gameInfo.currentPlayerID = (gameInfo.currentPlayerID + 1) % 6; 
+        gameInfo.round++;
+        gameInfo.state = GAME_STATE_NONE;
+    }
+
     if(gameInfo.players[gameInfo.currentPlayerID].isAI) {
-        playAITurn(board, gameInfo.currentPlayerID);
-        gameInfo.state = GAME_STATE_FINISHED;
+        gameInfo.state = GAME_STATE_AWAIT;
+        
+        setTimeout(() => {
+            playAITurn(gameInfo.board, gameInfo.currentPlayerID, findPlayerSlots(gameInfo.board, gameInfo.currentPlayerID), gameInfo.targetSlots);
+            gameInfo.state = GAME_STATE_FINISHED;
+        }, 1000+Math.random()*1000);
     } else {
         if(gameInfo.state == GAME_STATE_NONE) {
             gameInfo.state = GAME_STATE_PICK;
@@ -321,26 +336,28 @@ function gameStep(gameInfo) {
             gameInfo.state = GAME_STATE_AWAIT;
             gameInfo.playerSlotOnClick = (slot) => {
                 if(slot.color == 0) {
-                    if(isReachable(gameInfo.turnTempData.pickedSlot, slot, board)) {
+                    if(isReachable(gameInfo.turnTempData.pickedSlot, slot, gameInfo.board)) {
                         console.log('moved to slot (by '+gameInfo.currentPlayerID+'):', slot);
                         slot.color = gameInfo.currentPlayerID + 1;
                         gameInfo.turnTempData.pickedSlot.color = 0;
                         gameInfo.state = GAME_STATE_FINISHED;
                         console.log('gameInfo after turn:', gameInfo);
                     }
+                } else if(slot.color - 1 == gameInfo.currentPlayerID) {
+                    console.log('repicked slot (by '+gameInfo.currentPlayerID+'):', slot);
+                    gameInfo.turnTempData = { pickedSlot: slot };
                 }
             };
         }
     }
+}
 
-    if(gameInfo.state == GAME_STATE_FINISHED) {
-        // End turn
-        console.log('round ended');
-        gameInfo.turnTempData = {};
-        gameInfo.currentPlayerID = (gameInfo.currentPlayerID + 1) % 6; 
-        gameInfo.round++;
-        gameInfo.state = GAME_STATE_NONE;
-    }
+function aniamteBoardScale() {
+    let baseScale = min(windowWidth, windowHeight);
+    rotation += ((gameInfo.round / 6 * 360) - rotation) * 0.04;
+    let zoomOut = sin((rotation % 60) / 60 * 180) * baseScale * ZOOM_OUT_AMOUNT;
+
+    return baseScale - zoomOut;
 }
 
 function renderGame() {
@@ -351,10 +368,8 @@ function renderGame() {
 
     background(rotation % 360, 60, 100);
     
-    let baseScale = min(windowWidth, windowHeight);
-    rotation += ((gameInfo.round / 6 * 360) - rotation) * 0.04;
-    let zoomOut = sin((rotation % 60) / 60 * 180) * baseScale * ZOOM_OUT_AMOUNT;
-    renderBoard(windowWidth/2, windowHeight/2, baseScale - zoomOut, rotation, board, gameInfo);
+    let scale = aniamteBoardScale();
+    renderBoard(windowWidth/2, windowHeight/2, scale, rotation, gameInfo.board, gameInfo);
 
     gameStep(gameInfo);
 
