@@ -278,6 +278,10 @@ function isReachable(slot, target, board) {
     return false;
 }
 
+/**
+    Initializes board, player slots, resets round counter etc. 
+    Initializes/restarts the whole game.
+ */
 function initGame() {
     let boardData = generateBoard();
     return {
@@ -309,6 +313,7 @@ function gameStep(gameInfo) {
         gameInfo.currentPlayerID = (gameInfo.currentPlayerID + 1) % 6; 
         gameInfo.round++;
         gameInfo.state = GAME_STATE_NONE;
+        gameInfo.playerSlotOnClick = null;
     }
 
     if(gameInfo.players[gameInfo.currentPlayerID].isAI) {
@@ -319,6 +324,7 @@ function gameStep(gameInfo) {
             gameInfo.state = GAME_STATE_FINISHED;
         }, 1000+Math.random()*1000);
     } else {
+        console.log('in non-ai logic', Math.random());
         if(gameInfo.state == GAME_STATE_NONE) {
             gameInfo.state = GAME_STATE_PICK;
         }
