@@ -29,9 +29,8 @@ const GAME_STATE_NONE       =  0;
 const GAME_STATE_PICK       =  1;
 const GAME_STATE_MOVE       =  2;
 const GAME_STATE_AWAIT      =  3;
-const GAME_STATE_AI         =  4;
-const GAME_STATE_FINISHED   =  5;
-const GAME_STATE_JUMP       =  6;
+const GAME_STATE_FINISHED   =  4;
+const GAME_STATE_JUMP       =  5;
 const ZOOM_OUT_AMOUNT       =  0.5;
 
 // these variables are taken from generateBoard method and should have been made into constants in the first place
@@ -500,28 +499,6 @@ function animateBoardScale() {
 }
 
 
-function shuffleBoardSlots(board) {
-    const shuffleSlots = (slot) => {
-        let topLeftNeighbour = slot.topLeftNeighbour;
-        let topRightNeighbour = slot.topRightNeighbour;
-        let bottomLeftNeighbour = slot.bottomLeftNeighbour;
-        let bottomRightNeighbour = slot.bottomRightNeighbour;
-        let leftNeighbour = slot.leftNeighbour;
-        let rightNeighbour = slot.rightNeighbour;
-
-        slot.topLeftNeighbour = leftNeighbour;
-        slot.leftNeighbour = bottomLeftNeighbour;
-        slot.bottomLeftNeighbour = bottomRightNeighbour;
-        slot.bottomRightNeighbour = rightNeighbour;
-        slot.rightNeighbour = topRightNeighbour;
-        slot.topRightNeighbour = topLeftNeighbour;
-    };
-
-    board.forEach((slot) => {
-        shuffleSlots(slot);
-    });
-}
-
 function renderGame() {
     colorMode(HSB, 360, 100, 100, 1);
     angleMode(DEGREES);
@@ -531,10 +508,6 @@ function renderGame() {
     background(rotation % 360, 60, 100);
     
     let scale = animateBoardScale();
-    let roundedRotation = Math.round(rotation);
-    if(prevRotationStage != roundedRotation && roundedRotation % 60 == 0)
-        shuffleBoardSlots(gameInfo.board);
-
     renderBoard(windowWidth / 2, windowHeight / 2, scale, rotation, gameInfo.board, gameInfo);
     gameStep(gameInfo);
 
