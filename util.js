@@ -24,3 +24,13 @@ function shuffleArray(array) {
         .sort((a, b) => a.sort - b.sort)
         .map(({ value }) => value);
 }
+
+function sqr(a) { return a*a; }
+
+function rotatePoint(centerX, centerY, pointX, pointY, angle) {
+    // angle = radians(angle);
+    return {
+        x: cos(angle) * (pointX - centerX) - sin(angle) * (pointY - centerY) + centerX,
+        y: sin(angle) * (pointX - centerX) + cos(angle) * (pointY - centerY) + centerY,
+    };
+}

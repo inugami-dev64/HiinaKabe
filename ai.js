@@ -25,7 +25,7 @@ function playRandomAITurn(board, playerID, playerSlots, targetSlots) {
 
         for(key of keys) {
             
-            if(slot[key] && slot[key].color != slot.color && 
+            if(slot[key] && slot[key].color && slot[key].color != slot.color && 
                     slot[key][key] && !slot[key][key].color) {
                 slot[key][key].color = slot.color; 
                 slot.color = 0; 

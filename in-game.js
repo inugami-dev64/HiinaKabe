@@ -1,24 +1,15 @@
-/* 
-    TODOs:
-    - 
- */
-
-/* Slot definition:
-
-    {
-        x: number (0.0 - 1.0), 
-        y: number (0.0 - 1.0), 
-        color: 0 (empty), 1 - 6 (subtract 1 to get player color/id), 
-        topLeftNeighbour: ref to Slot, 
-        topRightNeighbour: ref to Slot, 
-        bottomLeftNeighbour: ref to Slot, 
-        bottomRightNeighbour: ref to Slot,
-        leftNeighbour: ref to Slot,
-        rightNeighbour: ref to Slot,
-    }
-*/
-
-class Slot {    
+class Slot {
+    /* 
+        x: number (0.0 - 1.0)
+        y: number (0.0 - 1.0)
+        color: 0 (empty), 1 - 6 (subtract 1 to get player color/id)
+        topLeftNeighbour: ref to Slot
+        topRightNeighbour: ref to Slot
+        bottomLeftNeighbour: ref to Slot
+        bottomRightNeighbour: ref to Slot
+        leftNeighbour: ref to Slot
+        rightNeighbour: ref to Slot
+    */
     constructor(x, y, color, topLeftNeighbour, topRightNeighbour, bottomLeftNeighbour, bottomRightNeighbour, leftNeighbour, rightNeighbour) {
         this.x = x;
         this.y = y;
@@ -32,23 +23,46 @@ class Slot {
     }
 }
 
+// Constants used in gameInfo.state
 const GAME_STATE_NONE =  0;
 const GAME_STATE_PICK =  1;
 const GAME_STATE_MOVE =  2;
 const GAME_STATE_AWAIT = 3;
 const GAME_STATE_FINISHED = 4;
+const GAME_STATE_JUMP = 5;
+
 const ZOOM_OUT_AMOUNT = 0.5;
 
 let gameInfo = initGame();
 let rotation = 0;
 
-// using _ig prefix to avoid overlappign names with ui.js
+let BUTTON_END_ROUND = {
+    label: 'lõpeta käik',
+    _width: 256,
+    _height: 40,
+    _padding: 32,
+    scale: 0,
+    onClick: () => { if(gameInfo.state == GAME_STATE_JUMP) gameInfo.state = GAME_STATE_FINISHED; },
+    x: function() { return windowWidth - this._width/2 - this._padding },
+    y: function() { return windowHeight - this._height/2 - this._padding },
+    w: function() { return this._width },
+    h: function() { return this._height },
+};
+
+// using ig_ prefix to avoid overlapping names with ui.js
 let ig_mouseIsPressedLast = true;
 
-/**
-    @returns {board: [Slot], targetSlots: [[Slot]]}
 
-    Generates empty game board with no player tiles. Returns an array with target slots for each player, where array index is playerID.
+// #########################
+// #                       #
+// #   BOARD GENERATION    #
+// #                       #
+// #########################
+
+
+/**
+    @returns {{board: [Slot], targetSlots: [[Slot]]}}
+    Generates a game board. Returns an array with target slots for each player, where array index is playerID.
 */
 function generateBoard() {
     let spectrumX = 14;
@@ -165,14 +179,12 @@ function generateBoard() {
         let prevRow = [slot];
 
         for(let i = 0; i < rows; i++) {
-            console.log('running on row:', prevRow);
             let row = [];
 
             prevRow.forEach((rowSlot) => {
                 row = row.concat(collectNeighbours(rowSlot, totalSlots));
             });
             
-            console.log('collected row:', row);
             totalSlots = totalSlots.concat(prevRow);
             prevRow = row;
         };
@@ -183,7 +195,6 @@ function generateBoard() {
     // Identify player slots
     let collectedSlots = [];
     playerSlots.forEach((slot, i) => {
-        console.log('filling slot:', slot);
         collectedSlots.push(collectSlotRows(slot, 4));
     });
 
@@ -208,9 +219,7 @@ function generateBoard() {
 }
 
 /**
-    @params board   Game board to render
-    @returns void
-
+    @params {[Slot]} board   Game board to render
     Draws game board.
  */
 function renderBoard(x, y, scale, rotation, board, gameInfo) {
@@ -250,11 +259,73 @@ function renderBoard(x, y, scale, rotation, board, gameInfo) {
     fill(0);
 }
 
+
+// #########################
+// #                       #
+// #   UTILITY FUNCTIONS   #
+// #                       #
+// #########################
+
+
+/**
+    @param {[Slot]} board
+    @param {number} playerID
+    Return an array containing all given player's slots.
+ */
 function findPlayerSlots(board, playerID) {
     return board.filter(slot => slot.color - 1 == playerID);
 }
 
-function isReachable(slot, target, board) {
+/**
+    @param {Slot} slot
+    @param {Slot} except
+    Checks if given slot can jump anywhere around it. Parameter 'except' can be used to exclude the slot (ex. where it was last time).
+ */
+function slotHasJumpingPossibility(slot, except = null) {
+    if(slot.topLeftNeighbour && slot.topLeftNeighbour.topLeftNeighbour && slot.topLeftNeighbour.color && 
+            slot.topLeftNeighbour.color != slot.color && !slot.topLeftNeighbour.topLeftNeighbour.color && slot.topLeftNeighbour.topLeftNeighbour != except) 
+        return true;
+    if(slot.topRightNeighbour && slot.topRightNeighbour.topRightNeighbour && slot.topRightNeighbour.color && 
+            slot.topRightNeighbour.color != slot.color && !slot.topRightNeighbour.topRightNeighbour.color && slot.topRightNeighbour.topRightNeighbour != except) 
+        return true;
+    if(slot.bottomLeftNeighbour && slot.bottomLeftNeighbour.bottomLeftNeighbour && slot.bottomLeftNeighbour.color && 
+            slot.bottomLeftNeighbour.color != slot.color && !slot.bottomLeftNeighbour.bottomLeftNeighbour.color && slot.bottomLeftNeighbour.bottomLeftNeighbour != except) 
+        return true;
+    if(slot.bottomRightNeighbour && slot.bottomRightNeighbour.bottomRightNeighbour && slot.bottomRightNeighbour.color && 
+            slot.bottomRightNeighbour.color != slot.color && !slot.bottomRightNeighbour.bottomRightNeighbour.color && slot.bottomRightNeighbour.bottomRightNeighbour != except) 
+        return true;
+    if(slot.leftNeighbour && slot.leftNeighbour.leftNeighbour && slot.leftNeighbour.color && 
+            slot.leftNeighbour.color != slot.color && !slot.leftNeighbour.leftNeighbour.color && slot.leftNeighbour.leftNeighbour != except) 
+        return true;
+    if(slot.rightNeighbour && slot.rightNeighbour.rightNeighbour && slot.rightNeighbour.color && 
+            slot.rightNeighbour.color != slot.color && !slot.rightNeighbour.rightNeighbour.color && slot.rightNeighbour.rightNeighbour != except) 
+        return true;
+    
+    return false;
+}
+
+/**
+    @param {Slot} slot
+    @param {Slot} target
+    Checks if 'target' is one block away from 'slot', meaning a jump occurred.
+ */
+function hasJumped(slot, target) {
+    if(slot.topLeftNeighbour && slot.topLeftNeighbour.topLeftNeighbour == target) return true;
+    if(slot.topRightNeighbour && slot.topRightNeighbour.topRightNeighbour == target) return true;
+    if(slot.bottomLeftNeighbour && slot.bottomLeftNeighbour.bottomLeftNeighbour == target) return true;
+    if(slot.bottomRightNeighbour && slot.bottomRightNeighbour.bottomRightNeighbour == target) return true;
+    if(slot.leftNeighbour && slot.leftNeighbour.leftNeighbour == target) return true;
+    if(slot.rightNeighbour && slot.rightNeighbour.rightNeighbour == target) return true;
+
+    return false;
+}
+
+/**
+    @param {Slot} slot
+    @param {Slot} target
+    Checks if the 'target' is reachable from 'slot'.
+ */
+function isReachable(slot, target) {
     if(target.color != 0) return;
     if(
         slot.topLeftNeighbour == target ||
@@ -303,12 +374,75 @@ function initGame() {
     };
 }
 
-function gameStep(gameInfo) {
-    if(gameInfo.state == GAME_STATE_AWAIT) return;
 
+// ##################
+// #                #
+// #   GAME LOGIC   #
+// #                #
+// ##################
+
+
+function onSlotClick_pickSlot(slot) {
+    // Avoid selecting other players' slots
+    if(slot.color - 1 != gameInfo.currentPlayerID) return;
+    
+    // Remember the picked slot
+    gameInfo.turnTempData = { pickedSlot: slot };
+    gameInfo.state = GAME_STATE_MOVE;
+}
+
+function onSlotClick_jump(slot) {
+    // Check if this is a valid jump move
+    if(hasJumped(gameInfo.turnTempData.pickedSlot, slot)) {
+        // Move the picked slot
+        slot.color = gameInfo.turnTempData.pickedSlot.color;
+        gameInfo.turnTempData.pickedSlot.color = 0;
+        gameInfo.turnTempData.pickedSlot = slot;
+    }
+}
+
+function onSlotClick_movePickedSlot(slot) {
+    // Can't move to an occupied slot
+    if(slot.color != 0) return;
+
+    // If selected a slot of the same color, replace picked slot with that
+    if(slot.color - 1 == gameInfo.currentPlayerID) {
+        gameInfo.turnTempData = { pickedSlot: slot };
+        return;
+    }
+
+    // Check if that slot can be moved there
+    if(!isReachable(gameInfo.turnTempData.pickedSlot, slot)) return;
+    
+    // If jumped over another slot
+    if(hasJumped(slot, gameInfo.turnTempData.pickedSlot)) {
+        // If the only option where to jump is back, the round is finished as you have nowhere else to jump
+        if(!slotHasJumpingPossibility(slot, gameInfo.turnTempData.pickedSlot)) {
+            gameInfo.state = GAME_STATE_FINISHED;
+        }
+        // If player has the possibility of continuing to jump
+        else {
+            // Remember the slot, where the roudn started, because round can't be ended there
+            gameInfo.turnTempData.started = gameInfo.turnTempData.pickedSlot;
+            gameInfo.state = GAME_STATE_JUMP;
+            gameInfo.playerSlotOnClick = onSlotClick_jump;
+        }
+    } else gameInfo.state = GAME_STATE_FINISHED; // if didn't jump over another slot
+
+    // Move the picked slot
+    slot.color = gameInfo.turnTempData.pickedSlot.color;
+    gameInfo.turnTempData.pickedSlot.color = 0;
+    gameInfo.turnTempData.pickedSlot = slot;
+}
+
+function gameStep(gameInfo) {
+    // If we're waiting for player to pick a slot, do nothing
+    if(gameInfo.state == GAME_STATE_AWAIT) return;
+    if(gameInfo.state == GAME_STATE_JUMP) return;
+
+    // Callbacks must change gameInfo.state to GAME_STATE_FINISHED to end the round
     if(gameInfo.state == GAME_STATE_FINISHED) {
         // End turn
-        console.log('round ended');
         gameInfo.turnTempData = {};
         gameInfo.currentPlayerID = (gameInfo.currentPlayerID + 1) % 6; 
         gameInfo.round++;
@@ -316,6 +450,7 @@ function gameStep(gameInfo) {
         gameInfo.playerSlotOnClick = null;
     }
 
+    // If the current player is an AI, play its turn after random delay of 1-2 seconds
     if(gameInfo.players[gameInfo.currentPlayerID].isAI) {
         gameInfo.state = GAME_STATE_AWAIT;
         
@@ -323,40 +458,34 @@ function gameStep(gameInfo) {
             playAITurn(gameInfo.board, gameInfo.currentPlayerID, findPlayerSlots(gameInfo.board, gameInfo.currentPlayerID), gameInfo.targetSlots);
             gameInfo.state = GAME_STATE_FINISHED;
         }, 1000+Math.random()*1000);
-    } else {
-        console.log('in non-ai logic', Math.random());
+    }
+    // If the current player is not an AI
+    else {
+        // Start by picking a slot
         if(gameInfo.state == GAME_STATE_NONE) {
             gameInfo.state = GAME_STATE_PICK;
         }
 
+        // Let the player pick a slot
         if(gameInfo.state == GAME_STATE_PICK) {
             gameInfo.state = GAME_STATE_AWAIT;
-            gameInfo.playerSlotOnClick = (slot) => {
-                if(slot.color - 1 == gameInfo.currentPlayerID) {
-                    console.log('picked slot (by '+gameInfo.currentPlayerID+'):', slot);
-                    gameInfo.turnTempData = { pickedSlot: slot };
-                    gameInfo.state = GAME_STATE_MOVE;
-                }
-            };
-        } else if(gameInfo.state == GAME_STATE_MOVE) {
+            gameInfo.playerSlotOnClick = onSlotClick_pickSlot;
+        } 
+        // Let the player move that slot
+        else if(gameInfo.state == GAME_STATE_MOVE) {
             gameInfo.state = GAME_STATE_AWAIT;
-            gameInfo.playerSlotOnClick = (slot) => {
-                if(slot.color == 0) {
-                    if(isReachable(gameInfo.turnTempData.pickedSlot, slot, gameInfo.board)) {
-                        console.log('moved to slot (by '+gameInfo.currentPlayerID+'):', slot);
-                        slot.color = gameInfo.currentPlayerID + 1;
-                        gameInfo.turnTempData.pickedSlot.color = 0;
-                        gameInfo.state = GAME_STATE_FINISHED;
-                        console.log('gameInfo after turn:', gameInfo);
-                    }
-                } else if(slot.color - 1 == gameInfo.currentPlayerID) {
-                    console.log('repicked slot (by '+gameInfo.currentPlayerID+'):', slot);
-                    gameInfo.turnTempData = { pickedSlot: slot };
-                }
-            };
+            gameInfo.playerSlotOnClick = onSlotClick_movePickedSlot;
         }
     }
 }
+
+
+// #################
+// #               #
+// #   RENDERING   #
+// #               #
+// #################
+
 
 function aniamteBoardScale() {
     let baseScale = min(windowWidth, windowHeight);
@@ -379,17 +508,12 @@ function renderGame() {
 
     gameStep(gameInfo);
 
+    // button the let the player end jumping
+    if(gameInfo.state == GAME_STATE_JUMP && gameInfo.turnTempData.pickedSlot != gameInfo.turnTempData.started) {
+        drawButton(BUTTON_END_ROUND);
+    }
+
     ig_mouseIsPressedLast = mouseIsPressed;
 }
 
 function mousePressed() { return !ig_mouseIsPressedLast && mouseIsPressed; }
-
-function sqr(a) { return a*a; }
-
-function rotatePoint(centerX, centerY, pointX, pointY, angle) {
-    // angle = radians(angle);
-    return {
-        x: cos(angle) * (pointX - centerX) - sin(angle) * (pointY - centerY) + centerX,
-        y: sin(angle) * (pointX - centerX) + cos(angle) * (pointY - centerY) + centerY,
-    };
-}

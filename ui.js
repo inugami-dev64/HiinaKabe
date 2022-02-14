@@ -13,9 +13,9 @@ let BUTTON_COMMON = {
   _padding: 32,
   _height: 64,
   x: function() { return windowWidth / 2 },
-  y: function() { return windowHeight / (this._numButtons + 1) * (this.index + 1) },
+  y: function() { return windowHeight / 2 - (this._numButtons - 1) * (this._height + this._padding) / 2 + this.index * (this._height + this._padding) },
   w: function() { return min(320, windowWidth - this._padding * 2) },
-  h: function() { return min(this._height, (windowHeight - this._numButtons * (this._padding + 1)) / this._numButtons) }
+  h: function() { return min(this._height/* , (windowHeight - this._numButtons * (this._padding + 1)) / this._numButtons */) }
 };
 
 /* MAIN MENU STATE */
@@ -25,7 +25,7 @@ let mainMenu_button_common = {
 
 let mainMenu_button_pvpGame = {
   index: 0,
-  label: "mängija vs mängija",
+  label: "tavasätted",
   onClick: () => state = STATE_IN_GAME,
 
   ...mainMenu_button_common,
@@ -34,7 +34,7 @@ let mainMenu_button_pvpGame = {
 
 let mainMenu_button_pvcGame = {
   index: 1,
-  label: "mängija vs arvuti",
+  label: "kohandatud mäng",
 
   ...mainMenu_button_common,
   ...BUTTON_COMMON,
