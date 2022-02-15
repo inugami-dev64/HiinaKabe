@@ -250,8 +250,6 @@ function renderBoard(x, y, scale, rotation, board, gameInfo) {
 
         // draw slot
         circle(x + location.x, y + location.y, radius);
-        slot.rotX = (x + location.x) / windowWidth;
-        slot.rotY = (y + location.y) / windowHeight;
     };
 
     board.forEach(slot => {
@@ -520,3 +518,27 @@ function renderGame() {
 }
 
 function mousePressed() { return !ig_mouseIsPressedLast && mouseIsPressed; }
+<<<<<<< HEAD
+||||||| parent of d268cfe (Refactor ai code to be independent from in-game.js)
+
+function sqr(a) { return a*a; }
+
+function rotatePoint(centerX, centerY, pointX, pointY, angle) {
+    // angle = radians(angle);
+    return {
+        x: cos(angle) * (pointX - centerX) - sin(angle) * (pointY - centerY) + centerX,
+        y: sin(angle) * (pointX - centerX) + cos(angle) * (pointY - centerY) + centerY,
+    };
+}
+=======
+
+function sqr(a) { return a*a; }
+
+function rotatePoint(centerX, centerY, pointX, pointY, angle) {
+     //angle = radians(angle);
+    return {
+        x: cos(angle) * (pointX - centerX) - sin(angle) * (pointY - centerY) + centerX,
+        y: sin(angle) * (pointX - centerX) + cos(angle) * (pointY - centerY) + centerY,
+    };
+}
+>>>>>>> d268cfe (Refactor ai code to be independent from in-game.js)

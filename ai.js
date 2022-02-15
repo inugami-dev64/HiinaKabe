@@ -46,6 +46,7 @@ class Movement {
 }
 
 const UP_VEC = new Vector(0.0, -1.0);
+let prevPlayerId = 0;
 
 
 // some non-sense function written by Rainis Randmaa
@@ -138,7 +139,6 @@ function correctMovement(movement) {
     }
 }
 
-
 // analyse all player slots and determine the least costly player to move with move
 function findSuitableMovement(playerSlots, dstSlot, playerID) {
     let minMovement = null;
@@ -156,19 +156,17 @@ function findSuitableMovement(playerSlots, dstSlot, playerID) {
         movement.moveVec.y *= movement.cost;
         movement.playerSlot = playerSlots[i];
 
-        console.log("Movement vector: ", movement.moveVec.x, " ", movement.moveVec.y);
-        console.log("Distance to travel is ", movement.moveVec.magnitude);
-        console.log("Travel angle: ", movement.angle * 180 / Math.PI);
-
-        correctMovement(movement);
-        movement.playerSlot = playerSlots[i];
+        if(dstSlot.rotY != playerSlots[i].rotY) {
+            correctMovement(movement);
+            movement.playerSlot = playerSlots[i];
+        }
         
         if(movement.nextSlot != null && (minMovement == null || movement.nextSlot.cost < minMovement.cost))
             minMovement = movement;
     }
 
-    //if(minMovement == null)
-        //throw "Could not find the minimal movement path";
+    if(minMovement == null)
+        throw "Could not find the minimal movement path";
 
     return minMovement;
 }
@@ -202,12 +200,19 @@ function playAITurn(board, playerID, playerSlots, targetSlots) {
     // calculate rotated coordinates for each slot in board
     board.forEach((slot) => {
         let rotation = playerID * 60;
-        const scale = 100000;
-        let location = rotatePoint(0, 0, (slot.x - 0.5) * scale, (slot.y - 0.5) * scale, rotation);
+        const scale = 1000;
+        let location = rotatePoint(0.5, 0.5, slot.x * scale, slot.y * scale, rotation);
 
         slot.rotX = location.x / scale;
         slot.rotY = location.y / scale;
-        shuffleSlots(slot);
+
+        // shuffle slots as much as necessary
+        let n = 0;
+        if(prevPlayerId > playerID)
+            n = 6 - prevPlayerId + playerID;
+        else n = playerID - prevPlayerId;
+        for(let i = 0; i < n; i++)
+            shuffleSlots(slot, rotation);
     });
 
     // sort playerSlots and targetSlots on decending order from y coordinate
@@ -219,8 +224,7 @@ function playAITurn(board, playerID, playerSlots, targetSlots) {
         throw "All slots in game are occupied? Not good";
 
     movement = findSuitableMovement(playerSlots, dstSlot, playerID);
-    if(movement != null) {
-        movement.nextSlot.color = movement.playerSlot.color;
-        movement.playerSlot.color = 0;
-    }
+    movement.nextSlot.color = movement.playerSlot.color;
+    movement.playerSlot.color = 0;
+    prevPlayerId = playerID;
 }
