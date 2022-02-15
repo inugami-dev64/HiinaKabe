@@ -1,2 +1,4 @@
 .rome/
 tags
+.config/
+.editorconfig
