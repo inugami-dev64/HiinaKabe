@@ -1,0 +1,95 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_OUTPUT_EXCMD	mixed	/number, pattern, mixed, or combineV2/
+!_TAG_OUTPUT_FILESEP	slash	/slash or backslash/
+!_TAG_OUTPUT_MODE	u-ctags	/u-ctags or e-ctags/
+!_TAG_PATTERN_LENGTH_LIMIT	96	/0 for no limit/
+!_TAG_PROC_CWD	/home/karl/git/HiinaKabe/	//
+!_TAG_PROGRAM_AUTHOR	Universal Ctags Team	//
+!_TAG_PROGRAM_NAME	Universal Ctags	/Derived from Exuberant Ctags/
+!_TAG_PROGRAM_URL	https://ctags.io/	/official site/
+!_TAG_PROGRAM_VERSION	5.9.0	//
+BUTTON_COMMON	ui.js	/^let BUTTON_COMMON = {$/;"	c
+GAME_STATE_AI	in-game.js	/^const GAME_STATE_AI         =  4;$/;"	C
+GAME_STATE_AWAIT	in-game.js	/^const GAME_STATE_AWAIT      =  3;$/;"	C
+GAME_STATE_FINISHED	in-game.js	/^const GAME_STATE_FINISHED   =  5;$/;"	C
+GAME_STATE_MOVE	in-game.js	/^const GAME_STATE_MOVE       =  2;$/;"	C
+GAME_STATE_NONE	in-game.js	/^const GAME_STATE_NONE       =  0;$/;"	C
+GAME_STATE_PICK	in-game.js	/^const GAME_STATE_PICK       =  1;$/;"	C
+HALF_STEP_X	in-game.js	/^const HALF_STEP_X = 0.5;$/;"	C
+HALF_STEP_Y	in-game.js	/^const HALF_STEP_Y = 0.5;$/;"	C
+Hiina kabe	README.md	/^# Hiina kabe$/;"	c
+Movement	ai.js	/^class Movement {$/;"	c
+SPECTRUM_X	in-game.js	/^const SPECTRUM_X = 14;$/;"	C
+SPECTRUM_Y	in-game.js	/^const SPECTRUM_Y = 17;$/;"	C
+STATE_CREDITS	ui.js	/^const STATE_CREDITS = 4;$/;"	C
+STATE_GAME_FINISHED	ui.js	/^const STATE_GAME_FINISHED = 3;$/;"	C
+STATE_IN_GAME	ui.js	/^const STATE_IN_GAME = 5;$/;"	C
+STATE_MAIN_MENU	ui.js	/^const STATE_MAIN_MENU = 0;$/;"	C
+STATE_PAUSE	ui.js	/^const STATE_PAUSE = 1;$/;"	C
+STATE_SETTINGS	ui.js	/^const STATE_SETTINGS = 2;$/;"	C
+STEP_X	in-game.js	/^const STEP_X = 1.0;$/;"	C
+STEP_Y	in-game.js	/^const STEP_Y = 1.0;$/;"	C
+Slot	in-game.js	/^class Slot {    $/;"	c
+UP_VEC	ai.js	/^const UP_VEC = new Vector(0.0, -1.0);$/;"	C
+Vector	ai.js	/^class Vector {$/;"	c
+ZOOM_OUT_AMOUNT	in-game.js	/^const ZOOM_OUT_AMOUNT       =  0.5;$/;"	C
+_height	ui.js	/^	_height: 64,$/;"	p	class:BUTTON_COMMON
+_numButtons	ui.js	/^	_numButtons: 3$/;"	p	class:mainMenu_button_common
+_padding	ui.js	/^	_padding: 32,$/;"	p	class:BUTTON_COMMON
+animateBoardScale	in-game.js	/^function animateBoardScale() {$/;"	f
+body	style.css	/^body {$/;"	s
+constructor	ai.js	/^    constructor() {$/;"	m	class:Movement
+constructor	ai.js	/^    constructor(_x, _y) {$/;"	m	class:Vector
+constructor	in-game.js	/^    constructor(x, y, color, topLeftNeighbour, topRightNeighbour, bottomLeftNeighbour, bottomRig/;"	m	class:Slot
+correctMovement	ai.js	/^function correctMovement(movement) {$/;"	f
+dot	ai.js	/^    static dot(_v1, _v2) {$/;"	m	class:Vector
+draw	ui.js	/^function draw() {$/;"	f
+drawButton	ui.js	/^function drawButton(button) {$/;"	f
+findPlayerSlots	in-game.js	/^function findPlayerSlots(board, playerID) {$/;"	f
+findSuitableMovement	ai.js	/^function findSuitableMovement(playerSlots, dstSlot, playerID) {$/;"	f
+findSuitableTarget	ai.js	/^function findSuitableTarget(board) {$/;"	f
+font300	ui.js	/^let font300;$/;"	v
+gameInfo	in-game.js	/^let gameInfo = initGame();$/;"	v
+gameStep	in-game.js	/^function gameStep(gameInfo) {$/;"	f
+generateBoard	in-game.js	/^function generateBoard() {$/;"	f
+h	ui.js	/^	h: function() { return min(this._height, (windowHeight - this._numButtons * (this._padding + 1)/;"	m	class:BUTTON_COMMON
+ig_mouseIsPressedLast	in-game.js	/^let ig_mouseIsPressedLast = true;$/;"	v
+index	ui.js	/^	index: 0,$/;"	p	class:mainMenu_button_pvpGame
+index	ui.js	/^	index: 1,$/;"	p	class:mainMenu_button_pvcGame
+index	ui.js	/^	index: 2,$/;"	p	class:mainMenu_button_creditsGame
+initGame	in-game.js	/^function initGame() {$/;"	f
+isReachable	in-game.js	/^function isReachable(slot, target, board) {$/;"	f
+label	ui.js	/^	label: "Koostajad",$/;"	p	class:mainMenu_button_creditsGame
+label	ui.js	/^	label: "Mängija vs arvuti",$/;"	p	class:mainMenu_button_pvcGame
+label	ui.js	/^	label: "Mängija vs mängija",$/;"	p	class:mainMenu_button_pvpGame
+magnitude	ai.js	/^    get magnitude() {$/;"	G	class:Vector
+mainMenu_button_common	ui.js	/^let mainMenu_button_common = {$/;"	c
+mainMenu_button_creditsGame	ui.js	/^let mainMenu_button_creditsGame = {$/;"	c
+mainMenu_button_pvcGame	ui.js	/^let mainMenu_button_pvcGame = {$/;"	c
+mainMenu_button_pvpGame	ui.js	/^let mainMenu_button_pvpGame = {$/;"	c
+mousePressed	in-game.js	/^function mousePressed() { return !ig_mouseIsPressedLast && mouseIsPressed; }$/;"	f
+normalise	ai.js	/^    normalise() {$/;"	m	class:Vector
+onClick	ui.js	/^	onClick: () => state = STATE_IN_GAME,$/;"	p	class:mainMenu_button_pvcGame
+onClick	ui.js	/^	onClick: () => state = STATE_IN_GAME,$/;"	p	class:mainMenu_button_pvpGame
+pickedSlot	in-game.js	/^                    gameInfo.turnTempData = { pickedSlot: slot };$/;"	p	class:gameInfo.turnTempData
+playAITurn	ai.js	/^function playAITurn(board, playerID, playerSlots, targetSlots) {$/;"	f
+playRandomAITurn	ai.js	/^function playRandomAITurn(board, playerID, playerSlots, targetSlots) {$/;"	f
+prevRotationStage	in-game.js	/^let prevRotationStage = 0;$/;"	v
+renderBoard	in-game.js	/^function renderBoard(x, y, scale, rotation, board, gameInfo) {$/;"	f
+renderGame	in-game.js	/^function renderGame() {$/;"	f
+rotatePoint	in-game.js	/^function rotatePoint(centerX, centerY, pointX, pointY, angle) {$/;"	f
+rotation	in-game.js	/^let rotation = 0;$/;"	v
+scale	ui.js	/^	scale: 1,$/;"	p	class:BUTTON_COMMON
+setup	ui.js	/^function setup() {$/;"	f
+shuffleArray	util.js	/^function shuffleArray(array) {$/;"	f
+shuffleArrayRef	util.js	/^function shuffleArrayRef(array) {$/;"	f
+shuffleBoardSlots	in-game.js	/^function shuffleBoardSlots(board) {$/;"	f
+slotCompareY	ai.js	/^function slotCompareY(a, b) {$/;"	f
+sqr	in-game.js	/^function sqr(a) { return a*a; }$/;"	f
+state	ui.js	/^let state = STATE_MAIN_MENU;$/;"	v
+turnTempData	in-game.js	/^                    gameInfo.turnTempData = { pickedSlot: slot };$/;"	c	class:gameInfo
+w	ui.js	/^	w: function() { return min(320, windowWidth - this._padding * 2) },$/;"	m	class:BUTTON_COMMON
+windowResized	ui.js	/^function windowResized() {$/;"	f
+x	ui.js	/^	x: function() { return windowWidth \/ 2 },$/;"	m	class:BUTTON_COMMON
+y	ui.js	/^	y: function() { return windowHeight \/ (this._numButtons + 1) * (this.index + 1) },$/;"	m	class:BUTTON_COMMON
