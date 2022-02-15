@@ -13,6 +13,8 @@ class Slot {
     constructor(x, y, color, topLeftNeighbour, topRightNeighbour, bottomLeftNeighbour, bottomRightNeighbour, leftNeighbour, rightNeighbour) {
         this.x = x;
         this.y = y;
+        this.rotX = x;
+        this.rotY = y;
         this.color = color;
         this.topLeftNeighbour = topLeftNeighbour;
         this.topRightNeighbour = topRightNeighbour;
@@ -68,21 +70,14 @@ let ig_mouseIsPressedLast = true;
     Generates a game board. Returns an array with target slots for each player, where array index is playerID.
 */
 function generateBoard() {
-    let spectrumX = 14;
-    let spectrumY = 17;
-    let stepX = 1.0;
-    let stepY = 1.0;
-    let halfStepX = 0.5;
-    let halfStepY = 0.5;
-    
-    // width: number, x: number (0.0 - 1.0), y: number (0.0 - 1.0)
+    // width: number, x: number [0.0 - 1.0], y: number [0.0 - 1.0]
     const generateRow = (width, x, y) => {
         let arr = [];
 
-        let offsetX = (width * stepX) / 2;
+        let offsetX = (width * STEP_X) / 2;
 
         for(let i = 0; i < width; i++) {
-            arr.push(new Slot(-offsetX + x + stepX * i, y, 0));
+            arr.push(new Slot(-offsetX + x + STEP_X * i, y, 0));
         }
 
         return arr;
@@ -90,23 +85,23 @@ function generateBoard() {
 
     // Generate slots
     let rows = [
-        generateRow(1, spectrumX / 2 + halfStepX, stepY * 0 + halfStepY),
-        generateRow(2, spectrumX / 2 + halfStepX, stepY * 1 + halfStepY),
-        generateRow(3, spectrumX / 2 + halfStepX, stepY * 2 + halfStepY),
-        generateRow(4, spectrumX / 2 + halfStepX, stepY * 3 + halfStepY),
-        generateRow(13, spectrumX / 2 + halfStepX, stepY * 4 + halfStepY),
-        generateRow(12, spectrumX / 2 + halfStepX, stepY * 5 + halfStepY),
-        generateRow(11, spectrumX / 2 + halfStepX, stepY * 6 + halfStepY),
-        generateRow(10, spectrumX / 2 + halfStepX, stepY * 7 + halfStepY),
-        generateRow( 9, spectrumX / 2 + halfStepX, stepY * 8 + halfStepY),
-        generateRow(10, spectrumX / 2 + halfStepX, stepY * 9 + halfStepY),
-        generateRow(11, spectrumX / 2 + halfStepX, stepY * 10 + halfStepY),
-        generateRow(12, spectrumX / 2 + halfStepX, stepY * 11 + halfStepY),
-        generateRow(13, spectrumX / 2 + halfStepX, stepY * 12 + halfStepY),
-        generateRow(4, spectrumX / 2 + halfStepX, stepY * 13 + halfStepY),
-        generateRow(3, spectrumX / 2 + halfStepX, stepY * 14 + halfStepY),
-        generateRow(2, spectrumX / 2 + halfStepX, stepY * 15 + halfStepY),
-        generateRow(1, spectrumX / 2 + halfStepX, stepY * 16 + halfStepY),
+        generateRow(1, SPECTRUM_X / 2 + HALF_STEP_X, STEP_Y * 0 + HALF_STEP_Y),
+        generateRow(2, SPECTRUM_X / 2 + HALF_STEP_X, STEP_Y * 1 + HALF_STEP_Y),
+        generateRow(3, SPECTRUM_X / 2 + HALF_STEP_X, STEP_Y * 2 + HALF_STEP_Y),
+        generateRow(4, SPECTRUM_X / 2 + HALF_STEP_X, STEP_Y * 3 + HALF_STEP_Y),
+        generateRow(13, SPECTRUM_X / 2 + HALF_STEP_X, STEP_Y * 4 + HALF_STEP_Y),
+        generateRow(12, SPECTRUM_X / 2 + HALF_STEP_X, STEP_Y * 5 + HALF_STEP_Y),
+        generateRow(11, SPECTRUM_X / 2 + HALF_STEP_X, STEP_Y * 6 + HALF_STEP_Y),
+        generateRow(10, SPECTRUM_X / 2 + HALF_STEP_X, STEP_Y * 7 + HALF_STEP_Y),
+        generateRow( 9, SPECTRUM_X / 2 + HALF_STEP_X, STEP_Y * 8 + HALF_STEP_Y),
+        generateRow(10, SPECTRUM_X / 2 + HALF_STEP_X, STEP_Y * 9 + HALF_STEP_Y),
+        generateRow(11, SPECTRUM_X / 2 + HALF_STEP_X, STEP_Y * 10 + HALF_STEP_Y),
+        generateRow(12, SPECTRUM_X / 2 + HALF_STEP_X, STEP_Y * 11 + HALF_STEP_Y),
+        generateRow(13, SPECTRUM_X / 2 + HALF_STEP_X, STEP_Y * 12 + HALF_STEP_Y),
+        generateRow(4, SPECTRUM_X / 2 + HALF_STEP_X, STEP_Y * 13 + HALF_STEP_Y),
+        generateRow(3, SPECTRUM_X / 2 + HALF_STEP_X, STEP_Y * 14 + HALF_STEP_Y),
+        generateRow(2, SPECTRUM_X / 2 + HALF_STEP_X, STEP_Y * 15 + HALF_STEP_Y),
+        generateRow(1, SPECTRUM_X / 2 + HALF_STEP_X, STEP_Y * 16 + HALF_STEP_Y),
     ];
 
     let board = [
@@ -141,7 +136,7 @@ function generateBoard() {
     // y: number
     // returns: slot reference
     const searchForSlot = (x, y) => {
-        // return board.find(slot => Math.abs(slot.x - x) < halfStepY && Math.abs(slot.y - y) < halfStepY);
+        // return board.find(slot => Math.abs(slot.x - x) < HALF_STEP_Y && Math.abs(slot.y - y) < HALF_STEP_Y);
         return board.find(slot => slot.x == x && slot.y == y);
     };
 
@@ -152,10 +147,10 @@ function generateBoard() {
             if(i < row.length-1) slot.rightNeighbour = row[i+1];
 
             let found;
-            if((found = searchForSlot(slot.x - halfStepX, slot.y - stepY))) slot.topLeftNeighbour = found;
-            if((found = searchForSlot(slot.x + halfStepX, slot.y - stepY))) slot.topRightNeighbour = found;
-            if((found = searchForSlot(slot.x - halfStepX, slot.y + stepY))) slot.bottomLeftNeighbour = found;
-            if((found = searchForSlot(slot.x + halfStepX, slot.y + stepY))) slot.bottomRightNeighbour = found;
+            if((found = searchForSlot(slot.x - HALF_STEP_X, slot.y - STEP_Y))) slot.topLeftNeighbour = found;
+            if((found = searchForSlot(slot.x + HALF_STEP_X, slot.y - STEP_Y))) slot.topRightNeighbour = found;
+            if((found = searchForSlot(slot.x - HALF_STEP_X, slot.y + STEP_Y))) slot.bottomLeftNeighbour = found;
+            if((found = searchForSlot(slot.x + HALF_STEP_X, slot.y + STEP_Y))) slot.bottomRightNeighbour = found;
         });
     });
 
@@ -214,8 +209,8 @@ function generateBoard() {
     collectedSlots.forEach((slot, i) => targetSlots[(i+6) % 6] = slot);
 
     board.forEach(slot => {
-        slot.x /= spectrumX;
-        slot.y /= spectrumY;
+        slot.x /= SPECTRUM_X;
+        slot.y /= SPECTRUM_Y;
     });
 
     return {board, targetSlots};
@@ -412,7 +407,6 @@ function initGame() {
     };
 }
 
-
 // ##################
 // #                #
 // #   GAME LOGIC   #
@@ -496,7 +490,7 @@ function gameStep(gameInfo) {
     // If the current player is an AI, play its turn after random delay of 1-2 seconds
     if(gameInfo.players[gameInfo.currentPlayerID].isAI) {
         gameInfo.state = GAME_STATE_AWAIT;
-        
+
         setTimeout(() => {
             playAITurn(gameInfo.board, gameInfo.currentPlayerID, findPlayerSlots(gameInfo.board, gameInfo.currentPlayerID), gameInfo.targetSlots);
             gameInfo.state = GAME_STATE_FINISHED;
@@ -530,7 +524,7 @@ function gameStep(gameInfo) {
 // #################
 
 
-function aniamteBoardScale() {
+function animateBoardScale() {
     let baseScale = min(windowWidth, windowHeight);
     rotation += ((gameInfo.round / 6 * 360) - rotation) * 0.04;
     let zoomOut = sin((rotation % 60) / 60 * 180) * baseScale * ZOOM_OUT_SPEED;
@@ -549,9 +543,8 @@ function renderGame() {
 
     background(rotation % 360, 60, 90);
     
-    let scale = aniamteBoardScale();
-    renderBoard(windowWidth/2, windowHeight/2, scale, rotation, gameInfo.board, gameInfo);
-
+    let scale = animateBoardScale();
+    renderBoard(windowWidth / 2, windowHeight / 2, scale, rotation, gameInfo.board, gameInfo);
     gameStep(gameInfo);
 
     // button the let the player end jumping

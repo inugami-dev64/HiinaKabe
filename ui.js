@@ -21,32 +21,32 @@ let BUTTON_COMMON = {
 
 /* MAIN MENU STATE */
 let mainMenu_button_common = {
-  _numButtons: 3
+	_numButtons: 3
 }
 
 let mainMenu_button_pvpGame = {
-  index: 0,
-  label: "tavasätted",
-  onClick: () => state = STATE_IN_GAME,
+    index: 0,
+    label: "tavasätted",
+    onClick: () => state = STATE_IN_GAME,
 
-  ...mainMenu_button_common,
-  ...BUTTON_COMMON,
+	...mainMenu_button_common,
+	...BUTTON_COMMON,
 };
 
 let mainMenu_button_pvcGame = {
-  index: 1,
-  label: "kohandatud mäng",
+    index: 1,
+    label: "kohandatud mäng",
 
-  ...mainMenu_button_common,
-  ...BUTTON_COMMON,
+	...mainMenu_button_common,
+	...BUTTON_COMMON,
 };
 
 let mainMenu_button_creditsGame = {
-  index: 2,
-  label: "koostajad",
+	index: 2,
+	label: "Koostajad",
 
-  ...mainMenu_button_common,
-  ...BUTTON_COMMON,
+	...mainMenu_button_common,
+	...BUTTON_COMMON,
 };
 
 /* ENGINE STUFF */
@@ -139,5 +139,5 @@ function drawButton(button) {
 }
 
 function windowResized() {
-  resizeCanvas(windowWidth, windowHeight);
+	resizeCanvas(windowWidth, windowHeight);
 }
