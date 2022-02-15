@@ -9,6 +9,7 @@ let state = STATE_MAIN_MENU;
 
 /* STYLES */
 let BUTTON_COMMON = {
+  step: 0,
   scale: 1,
   _padding: 32,
   _height: 64,
@@ -53,13 +54,20 @@ let font300;
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
+
+  // Hacky way to apply letter spacing to the game's canvas
+  select('canvas').elt.style.letterSpacing = "3px";
+
+  // Default properties
   background(255);
+  textStyle(BOLD);
   textFont('Open Sans');
   textSize(21);
+  colorMode(HSB, 360, 100, 100, 1);
 }
 
 function draw() {
-  background(192);
+  background(0);
 
   push();
   switch(state) {
@@ -94,30 +102,38 @@ function draw() {
 }
 
 function drawButton(button) {
+  push();
+  colorMode(HSB, 360, 100, 100, 1);
+  angleMode(RADIANS);
+  rectMode(CENTER);
+
   let x = button.x(), y = button.y(), w = button.w(), h = button.h();
 
   // UPDATE
   if(mouseX >= x-w/2 && mouseX <= x+w/2 && mouseY >= y-h/2 && mouseY <= y+h/2) {
-    button.scale = min(1.1, button.scale * 1.02);
+    button.step = min(button.step + 1.0 / 60.0, 1);
+    button.scale = easeInElastic(button.step);
 
     // handle click events
     if(mouseIsPressed && button.hasOwnProperty('onClick')) button.onClick();
   } else {
-    button.scale = max(1, button.scale * 0.98);
+    button.step = max(0, button.step - 1.0 / 8.0);
+    button.scale = button.step;
   }
 
   // DRAW
+  let c = button.scale * (mouseX - x) / w;
   
   noStroke();
-  fill(0, 0, 0, 255);
+  fill(180+c*100, abs(c) * 50, 70, 0.25 + 0.75 * button.scale);
   rectMode(CENTER);
   textAlign(CENTER, CENTER);
 
-  push();
   translate(x, y);
-  scale(button.scale);
-  rect(0, 0, w, h);
-  fill(255);
+  scale(1 + button.scale * 0.1);
+  rotate(button.scale * radians((mouseX - x) / w * 5));
+  rect(0, 0, w, h, h);
+  fill(0, 0, 100);
   text(button.label, 0, 0);
   pop();
 }

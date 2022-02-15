@@ -31,16 +31,19 @@ const GAME_STATE_AWAIT = 3;
 const GAME_STATE_FINISHED = 4;
 const GAME_STATE_JUMP = 5;
 
-const ZOOM_OUT_AMOUNT = 0.5;
+const ZOOM_OUT_SPEED = 0.5;
 
 let gameInfo = initGame();
 let rotation = 0;
+let hoveredSlot;
+let highlighter = { x: 0, y: 0, animationStep: 1 };
 
 let BUTTON_END_ROUND = {
     label: 'lõpeta käik',
     _width: 256,
     _height: 40,
     _padding: 32,
+    step: 0,
     scale: 0,
     onClick: () => { if(gameInfo.state == GAME_STATE_JUMP) gameInfo.state = GAME_STATE_FINISHED; },
     x: function() { return windowWidth - this._width/2 - this._padding },
@@ -223,12 +226,10 @@ function generateBoard() {
     Draws game board.
  */
 function renderBoard(x, y, scale, rotation, board, gameInfo) {
-
-    stroke(0, 0, 0, 0.25);
-    fill(0, 0, 100, 0.5);
+    hoveredSlot = null;
 
     const renderSlot = (slot) => {
-        strokeWeight(1);
+
         // translate slot
         let location = rotatePoint(0, 0, (slot.x - 0.5) * scale, (slot.y - 0.5) * scale, rotation);
         let radius = (1.0 / 15.0) * scale;
@@ -238,22 +239,59 @@ function renderBoard(x, y, scale, rotation, board, gameInfo) {
         let b = sqr(mouseY - location.y - y);
         let c = sqr(radius/2);
 
-        if(a + b < c || gameInfo.turnTempData.pickedSlot == slot) strokeWeight(4);
-        
-        if(slot.color) fill(360 / 6 * (slot.color - 1), 90, 90, 1.0);
-        else fill(0, 0, 100, 0.2);
+        if(a + b < c) {
+            hoveredSlot = slot;
 
-        if(a + b < c && mousePressed()) {
-            if(gameInfo.playerSlotOnClick != undefined) gameInfo.playerSlotOnClick(slot);
+            if(mousePressed() && gameInfo.playerSlotOnClick != undefined) gameInfo.playerSlotOnClick(slot);
+        }
+        
+        // # DRAW SLOT #
+        stroke(0, 0, 0, 0.25);
+        strokeWeight(gameInfo.turnTempData.pickedSlot == slot ? 4 : 1.5);
+
+        if(slot.color) fill(360 / 6 * (slot.color - 1), 90, 90, 1.0);
+        else fill(0, 0, 100, 0.1);
+
+        circle(x + location.x, y + location.y, radius);
+    }
+
+    const renderHighlighter = (highlighter) => {
+
+        // translate slot
+        let radius = (1.0 / 15.0) * scale;
+
+        // move highlighter
+        if(hoveredSlot) {
+            let targetLocation = rotatePoint(0, 0, (hoveredSlot.x - 0.5) * scale, (hoveredSlot.y - 0.5) * scale, rotation);
+
+            highlighter.x += ((x + targetLocation.x) - highlighter.x) * 0.5;
+            highlighter.y += ((y + targetLocation.y) - highlighter.y) * 0.5;
+        } else {
+            highlighter.x += (mouseX - highlighter.x) * 0.3;
+            highlighter.y += (mouseY - highlighter.y) * 0.3;
         }
 
-        // draw slot
-        circle(x + location.x, y + location.y, radius);
-    };
+        // # DRAW OUTLINE HIGHLIGHTING #
+        if(gameInfo.turnTempData.pickedSlot) {
+            stroke(0, 0, 100, highlighter.animationStep * 0.2);
+            strokeCap(ROUND);
+            strokeWeight(radius * (1 + highlighter.animationStep * 0.5));
 
+            let end = rotatePoint(0, 0, (gameInfo.turnTempData.pickedSlot.x - 0.5) * scale, (gameInfo.turnTempData.pickedSlot.y - 0.5) * scale, rotation);
+            line(highlighter.x, highlighter.y, x + end.x, y + end.y);
+        } else {
+            noStroke();
+            fill(0, 0, 100, highlighter.animationStep * 0.2);
+            circle(highlighter.x, highlighter.y, radius * (1 + highlighter.animationStep * 0.5));
+        }
+    }
+
+    // Draw board slots
     board.forEach(slot => {
         renderSlot(slot);
     });
+    
+    renderHighlighter(highlighter);
 
     stroke(255);
     fill(0);
@@ -310,12 +348,12 @@ function slotHasJumpingPossibility(slot, except = null) {
     Checks if 'target' is one block away from 'slot', meaning a jump occurred.
  */
 function hasJumped(slot, target) {
-    if(slot.topLeftNeighbour && slot.topLeftNeighbour.topLeftNeighbour == target) return true;
-    if(slot.topRightNeighbour && slot.topRightNeighbour.topRightNeighbour == target) return true;
-    if(slot.bottomLeftNeighbour && slot.bottomLeftNeighbour.bottomLeftNeighbour == target) return true;
-    if(slot.bottomRightNeighbour && slot.bottomRightNeighbour.bottomRightNeighbour == target) return true;
-    if(slot.leftNeighbour && slot.leftNeighbour.leftNeighbour == target) return true;
-    if(slot.rightNeighbour && slot.rightNeighbour.rightNeighbour == target) return true;
+    if(slot.topLeftNeighbour && slot.topLeftNeighbour.color && slot.topLeftNeighbour.color != slot.color && slot.topLeftNeighbour.topLeftNeighbour == target && !slot.topLeftNeighbour.topLeftNeighbour.color) return true;
+    if(slot.topRightNeighbour && slot.topRightNeighbour.color && slot.topRightNeighbour.color != slot.color && slot.topRightNeighbour.topRightNeighbour == target && !slot.topRightNeighbour.topRightNeighbour.color) return true;
+    if(slot.bottomLeftNeighbour && slot.bottomLeftNeighbour.color && slot.bottomLeftNeighbour.color != slot.color && slot.bottomLeftNeighbour.bottomLeftNeighbour == target && !slot.bottomLeftNeighbour.bottomLeftNeighbour.color) return true;
+    if(slot.bottomRightNeighbour && slot.bottomRightNeighbour.color && slot.bottomRightNeighbour.color != slot.color && slot.bottomRightNeighbour.bottomRightNeighbour == target && !slot.bottomRightNeighbour.bottomRightNeighbour.color) return true;
+    if(slot.leftNeighbour && slot.leftNeighbour.color && slot.leftNeighbour.color != slot.color && slot.leftNeighbour.leftNeighbour == target && !slot.leftNeighbour.leftNeighbour.color) return true;
+    if(slot.rightNeighbour && slot.rightNeighbour.color && slot.rightNeighbour.color != slot.color && slot.rightNeighbour.rightNeighbour == target && !slot.rightNeighbour.rightNeighbour.color) return true;
 
     return false;
 }
@@ -422,7 +460,7 @@ function onSlotClick_movePickedSlot(slot) {
         }
         // If player has the possibility of continuing to jump
         else {
-            // Remember the slot, where the roudn started, because round can't be ended there
+            // Remember the slot, where the round started, because round can't be ended there
             gameInfo.turnTempData.started = gameInfo.turnTempData.pickedSlot;
             gameInfo.state = GAME_STATE_JUMP;
             gameInfo.playerSlotOnClick = onSlotClick_jump;
@@ -435,6 +473,11 @@ function onSlotClick_movePickedSlot(slot) {
     gameInfo.turnTempData.pickedSlot = slot;
 }
 
+/**
+    @param {GameInfo} gameInfo Reference to current state of the game
+
+    Executes one game round for one player.
+ */
 function gameStep(gameInfo) {
     // If we're waiting for player to pick a slot, do nothing
     if(gameInfo.state == GAME_STATE_AWAIT) return;
@@ -490,18 +533,21 @@ function gameStep(gameInfo) {
 function aniamteBoardScale() {
     let baseScale = min(windowWidth, windowHeight);
     rotation += ((gameInfo.round / 6 * 360) - rotation) * 0.04;
-    let zoomOut = sin((rotation % 60) / 60 * 180) * baseScale * ZOOM_OUT_AMOUNT;
+    let zoomOut = sin((rotation % 60) / 60 * 180) * baseScale * ZOOM_OUT_SPEED;
 
     return baseScale - zoomOut;
 }
 
+/**
+    Renders the game and its UI. Called from ui.js.
+ */
 function renderGame() {
     colorMode(HSB, 360, 100, 100, 1);
     angleMode(DEGREES);
     rectMode(CENTER);
     ellipseMode(CENTER);
 
-    background(rotation % 360, 60, 100);
+    background(rotation % 360, 60, 90);
     
     let scale = aniamteBoardScale();
     renderBoard(windowWidth/2, windowHeight/2, scale, rotation, gameInfo.board, gameInfo);

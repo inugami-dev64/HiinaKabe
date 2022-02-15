@@ -34,3 +34,13 @@ function rotatePoint(centerX, centerY, pointX, pointY, angle) {
         y: sin(angle) * (pointX - centerX) + cos(angle) * (pointY - centerY) + centerY,
     };
 }
+
+function easeInElastic(x) {
+    const c4 = (2 * Math.PI) / 3;
+
+    return x === 0
+        ? 0
+        : x === 1
+        ? 1
+        : pow(2, -10 * x) * sin((x * 10 - 0.75) * c4) + 1;
+}
