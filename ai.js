@@ -99,33 +99,22 @@ function findSuitableTarget(board) {
 
 
 // this function might actually require some sort of path finding algorithm to be implemented
-function correctMovement(movement) {
+function correctMovement(playerId, movement) {
+    let neighbours = shuffleNeighbours(playerId, movement.playerSlot);
     if(movement.moveVec.x <= 0) {
-        if(movement.angle >= 0 && movement.angle < Math.PI / 3) {
-            movement.nextSlot = movement.playerSlot.topLeftNeighbour;
-            console.log("topLeftNeighbour");
-        }
-        else if(movement.angle >= Math.PI / 3 && movement.angle < (2 * Math.PI) / 3) {
-            movement.nextSlot = movement.playerSlot.leftNeighbour;
-            console.log("leftNeighbour");
-        }
-        else if(movement.angle >= (2 * Math.PI) / 3) {
-            movement.nextSlot = movement.playerSlot.bottomLeftNeighbour;
-            console.log("bottomLeftNeighbour");
-        }
+        if(movement.angle >= 0 && movement.angle < Math.PI / 3)
+            movement.nextSlot = neighbours.topLeftNeighbour;
+        else if(movement.angle >= Math.PI / 3 && movement.angle < (2 * Math.PI) / 3)
+            movement.nextSlot = neighbours.leftNeighbour;
+        else if(movement.angle >= (2 * Math.PI) / 3)
+            movement.nextSlot = neighbours.bottomLeftNeighbour;
     } else {
-        if(movement.angle > 0 && movement.angle <= Math.PI / 3) {
-            movement.nextSlot = movement.playerSlot.topRightNeighbour;
-            console.log("topRightNeighbour");
-        }
-        else if(movement.angle > Math.PI / 3 && movement.angle <= (2 * Math.PI) / 3) {
-            movement.nextSlot = movement.playerSlot.rightNeighbour;
-            console.log("rightNeighbour");
-        }
-        else if(movement.angle > (2 * Math.PI) / 3) {
-            movement.nextSlot = movement.playerSlot.bottomRightNeighbour;
-            console.log("bottomRightNeighbour");
-        }
+        if(movement.angle > 0 && movement.angle <= Math.PI / 3)
+            movement.nextSlot = neighbours.topRightNeighbour;
+        else if(movement.angle > Math.PI / 3 && movement.angle <= (2 * Math.PI) / 3)
+            movement.nextSlot = neighbours.rightNeighbour;
+        else if(movement.angle > (2 * Math.PI) / 3)
+            movement.nextSlot = neighbours.bottomRightNeighbour;
     }
 
     // recursively check find the jump destination 
@@ -135,12 +124,12 @@ function correctMovement(movement) {
         movement.moveVec.y -= (movement.nextSlot.y - movement.playerSlot.y);
         movement.angle = Math.acos(Vector.dot(movement.moveVec, UP_VEC));
         movement.cost -= movement.moveVec.magnitude;
-        correctMovement(movement);
+        correctMovement(playerId, movement);
     }
 }
 
 // analyse all player slots and determine the least costly player to move with move
-function findSuitableMovement(playerSlots, dstSlot, playerID) {
+function findSuitableMovement(playerSlots, dstSlot, playerID, boardSlotNeighbours) {
     let minMovement = null;
     
     // search for slots with minimal cost
@@ -157,7 +146,7 @@ function findSuitableMovement(playerSlots, dstSlot, playerID) {
         movement.playerSlot = playerSlots[i];
 
         if(dstSlot.rotY != playerSlots[i].rotY) {
-            correctMovement(movement);
+            correctMovement(playerID, movement);
             movement.playerSlot = playerSlots[i];
         }
         
@@ -171,6 +160,75 @@ function findSuitableMovement(playerSlots, dstSlot, playerID) {
     return minMovement;
 }
 
+function shuffleNeighbours(playerID, slot) {
+    let topLeftNeighbour = "topLeftNeighbour";
+    let topRightNeighbour = "topRightNeighbour";
+    let bottomLeftNeighbour = "bottomLeftNeighbour";
+    let bottomRightNeighbour = "bottomRightNeighbour";
+    let leftNeighbour = "leftNeighbour";
+    let rightNeighbour = "rightNeighbour";
+
+    switch(playerID) {
+        case 1:
+            topLeftNeighbour = "leftNeighbour";
+            leftNeighbour = "bottomLeftNeighbour";
+            bottomLeftNeighbour = "bottomRightNeighbour";
+            bottomRightNeighbour = "topRightNeighbour";
+            rightNeighbour = "topRightNeighbour";
+            topRightNeighbour = "topLeftNeighbour";
+            break;
+
+        case 2:
+            topLeftNeighbour = "bottomLeftNeighbour";
+            leftNeighbour = "bottomRightNeighbour";
+            bottomLeftNeighbour = "rightNeighbour";
+            bottomRightNeighbour = "topRightNeighbour";
+            rightNeighbour = "topLeftNeighbour";
+            topRightNeighbour = "leftNeighbour";
+            break;
+
+        case 3:
+            topLeftNeighbour = "bottomRightNeighbour";
+            leftNeighbour = "rightNeighbour";
+            bottomLeftNeighbour = "topRightNeighbour";
+            bottomRightNeighbour = "topLeftNeighbour";
+            rightNeighbour = "leftNeighbour";
+            topRightNeighbour = "bottomLeftNeighbour";
+            break;
+
+        case 4:
+            topLeftNeighbour = "rightNeighbour";
+            leftNeighbour = "topRightNeighbour";
+            bottomLeftNeighbour = "topLeftNeighbour";
+            bottomRightNeighbour = "leftNeighbour";
+            rightNeighbour = "bottomLeftNeighbour";
+            topRightNeighbour = "bottomRightNeighbour";
+            break;
+
+        case 5:
+            topLeftNeighbour = "topRightNeighbour";
+            leftNeighbour = "topLeftNeighbour";
+            bottomLeftNeighbour = "leftNeighbour";
+            bottomRightNeighbour = "bottomLeftNeighbour";
+            rightNeighbour = "bottomRightNeighbour";
+            topRightNeighbour = "rightNeighbour";
+            break;
+
+        default:
+            throw "Invalid player id";
+            break;
+    }
+
+    return {
+        "topLeftNeighbour": slot[topLeftNeighbour],
+        "leftNeighbour": slot[leftNeighbour],
+        "bottomLeftNeighbour": slot[bottomLeftNeighbour],
+        "bottomRightNeighbour": slot[bottomRightNeighbour],
+        "rightNeighbour": slot[rightNeighbour],
+        "topRightNeighbour": slot[topLeftNeighbour]
+    };
+}
+
 /**
     @param board: [Slot]            Game board (reference)
     @param playerID: number (0-5)   Player whose turn it is
@@ -181,23 +239,6 @@ function findSuitableMovement(playerSlots, dstSlot, playerID) {
     Takes one turn for the given player.
 */
 function playAITurn(board, playerID, playerSlots, targetSlots) {
-    const shuffleSlots = (slot) => {
-        let topLeftNeighbour = slot.topLeftNeighbour;
-        let topRightNeighbour = slot.topRightNeighbour;
-        let bottomLeftNeighbour = slot.bottomLeftNeighbour;
-        let bottomRightNeighbour = slot.bottomRightNeighbour;
-        let leftNeighbour = slot.leftNeighbour;
-        let rightNeighbour = slot.rightNeighbour;
-
-        slot.topLeftNeighbour = leftNeighbour;
-        slot.leftNeighbour = bottomLeftNeighbour;
-        slot.bottomLeftNeighbour = bottomRightNeighbour;
-        slot.bottomRightNeighbour = rightNeighbour;
-        slot.rightNeighbour = topRightNeighbour;
-        slot.topRightNeighbour = topLeftNeighbour;
-    };
-
-    // calculate rotated coordinates for each slot in board
     board.forEach((slot) => {
         let rotation = playerID * 60;
         const scale = 1000;
@@ -211,9 +252,8 @@ function playAITurn(board, playerID, playerSlots, targetSlots) {
         if(prevPlayerId > playerID)
             n = 6 - prevPlayerId + playerID;
         else n = playerID - prevPlayerId;
-        for(let i = 0; i < n; i++)
-            shuffleSlots(slot, rotation);
     });
+
 
     // sort playerSlots and targetSlots on decending order from y coordinate
     playerSlots.sort(slotCompareY);

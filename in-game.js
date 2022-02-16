@@ -35,6 +35,13 @@ const GAME_STATE_JUMP = 5;
 
 const ZOOM_OUT_SPEED = 0.5;
 
+const SPECTRUM_X = 14;
+const SPECTRUM_Y = 17;
+const STEP_X = 1.0;
+const STEP_Y = 1.0;
+const HALF_STEP_X = 0.5;
+const HALF_STEP_Y = 0.5;
+
 let gameInfo = initGame();
 let rotation = 0;
 let hoveredSlot;
