@@ -42,7 +42,6 @@ const STEP_Y = 1.0;
 const HALF_STEP_X = 0.5;
 const HALF_STEP_Y = 0.5;
 
-let gameInfo = initGame();
 let rotation = 0;
 let hoveredSlot;
 let highlighter = { x: 0, y: 0, animationStep: 1 };

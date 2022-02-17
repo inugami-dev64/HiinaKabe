@@ -1,6 +1,6 @@
 const STATE_MAIN_MENU = 0;
 const STATE_PAUSE = 1;
-const STATE_SETTINGS = 2;
+const STATE_CUSTOM_GAME = 2;
 const STATE_GAME_FINISHED = 3;
 const STATE_CREDITS = 4;
 const STATE_IN_GAME = 5;
@@ -36,6 +36,7 @@ let mainMenu_button_pvpGame = {
 let mainMenu_button_pvcGame = {
     index: 1,
     label: "kohandatud mäng",
+    onClick: () => state = STATE_CUSTOM_GAME,
 
 	...mainMenu_button_common,
 	...BUTTON_COMMON,
@@ -50,6 +51,7 @@ let mainMenu_button_creditsGame = {
 };
 
 /* ENGINE STUFF */
+let mouseLastPressed = false;
 let font300;
 
 function setup() {
@@ -81,8 +83,8 @@ function draw() {
 
     };
     break;
-    case STATE_SETTINGS: {
-
+    case STATE_CUSTOM_GAME: {
+      renderCustomGameMenu();
     };
     break;
     case STATE_GAME_FINISHED: {
@@ -99,6 +101,8 @@ function draw() {
     break;
   }
   pop();
+
+  mouseLastPressed = mouseIsPressed;
 }
 
 function drawButton(button) {
@@ -115,7 +119,7 @@ function drawButton(button) {
     button.scale = easeInElastic(button.step);
 
     // handle click events
-    if(mouseIsPressed && button.hasOwnProperty('onClick')) button.onClick();
+    if(mouseIsPressed && !mouseLastPressed && button.hasOwnProperty('onClick')) button.onClick();
   } else {
     button.step = max(0, button.step - 1.0 / 8.0);
     button.scale = button.step;
@@ -125,7 +129,8 @@ function drawButton(button) {
   let c = button.scale * (mouseX - x) / w;
   
   noStroke();
-  fill(180+c*100, abs(c) * 50, 70, 0.25 + 0.75 * button.scale);
+  if(button.color) fill(180+c*100, abs(c) * 50, 70, 0.25 + 0.75 * button.scale);
+  else fill(180+c*100, 0, 70, 0.25 + 0.75 * button.scale);
   rectMode(CENTER);
   textAlign(CENTER, CENTER);
 
