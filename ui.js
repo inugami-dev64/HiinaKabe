@@ -127,10 +127,15 @@ function drawButton(button) {
 
   // DRAW
   let c = button.scale * (mouseX - x) / w;
+  let cmax = (mouseX - x) / w;
   
   noStroke();
-  if(button.color) fill(180+c*100, abs(c) * 50, 70, 0.25 + 0.75 * button.scale);
-  else fill(180+c*100, 0, 70, 0.25 + 0.75 * button.scale);
+  if(button.toggled) {
+    if(!button.toggled()) fill(180+50, 20, 50, 1);
+    else fill(0, 0, 70, 0.25);
+  } else {
+    fill(180+c*100, abs(c) * 50, 70, 0.25 + 0.75 * button.scale);
+  }
   rectMode(CENTER);
   textAlign(CENTER, CENTER);
 

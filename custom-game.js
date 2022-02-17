@@ -21,7 +21,7 @@ let customGame_player_options_button_common = {
     _padding: 32,
     step: 0,
     scale: 0,
-    color: function() {  return currentOptions.players[this.index].enabled },
+    toggled: function() {  return currentOptions.players[this.index].enabled },
     onClick: function() { currentOptions.players[this.index].enabled = !currentOptions.players[this.index].enabled },
     x: function() { return this._width/2 + this._padding },
     y: function() { return this._height/2 + this._padding + this.index * (this._height/2 + this._padding) },
