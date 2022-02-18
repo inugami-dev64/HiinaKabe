@@ -99,8 +99,20 @@ function findSuitableTarget(board) {
 
 
 // this function might actually require some sort of path finding algorithm to be implemented
-function correctMovement(playerId, movement) {
+function correctMovement(playerId, movement, dstSlot, isJump) {
     let neighbours = shuffleNeighbours(playerId, movement.playerSlot);
+
+    // check if any of the neighbours are colored and if not then quit without next slot to go to
+    //if((neighbours.topLeftNeighbour == null     || neighbours.topLeftNeighbour.color == 0) && 
+       //(neighbours.leftNeighbour == null        || neighbours.leftNeighbour.color == 0) && 
+       //(neighbours.bottomLeftNeighbour == null  || neighbours.bottomLeftNeighbour.color == 0) &&
+       //(neighbours.topRightNeighbour == null    || neighbours.topRightNeighbour.color == 0) && 
+       //(neighbours.rightNeighbour == null       || neighbours.rightNeighbour.color == 0) && 
+       //(neighbours.bottomRightNeighbour == null  || neighbours.bottomRightNeighbour.color == 0)) 
+        //return;
+
+    console.log("Movement cost in correctMovement(): ", movement.cost);
+    console.log("Movement angle in correctMovement(): ", movement.angle * 180 / Math.PI);
     if(movement.moveVec.x <= 0) {
         if(movement.angle >= 0 && movement.angle < Math.PI / 3)
             movement.nextSlot = neighbours.topLeftNeighbour;
@@ -118,14 +130,37 @@ function correctMovement(playerId, movement) {
     }
 
     // recursively check find the jump destination 
-    if(movement.nextSlot != null && movement.nextSlot.color != 0) {
-        movement.playerSlot = movement.nextSlot;
-        movement.moveVec.x -= (movement.nextSlot.x - movement.playerSlot.x);
-        movement.moveVec.y -= (movement.nextSlot.y - movement.playerSlot.y);
-        movement.angle = Math.acos(Vector.dot(movement.moveVec, UP_VEC));
-        movement.cost -= movement.moveVec.magnitude;
-        correctMovement(playerId, movement);
-    }
+    //if(movement.nextSlot != null && movement.nextSlot.color != 0) {
+        //movement.moveVec.x = dstSlot.rotX - movement.nextSlot.rotX;
+        //movement.moveVec.y = dstSlot.rotY - movement.nextSlot.rotY;
+        //movement.cost = movement.moveVec.magnitude;
+        //movement.playerSlot = movement.nextSlot;
+        //movement.nextSlot = null;
+        //correctMovement(playerId, movement, dstSlot, true);
+    //} else if(movement.nextSlot != null && isJump == true) {
+        //let currentNextSlot = movement.nextSlot;
+        //let magnitude = movement.moveVec.magnitude;
+
+        //movement.moveVec.normalise();
+        //movement.angle = Math.acos(Vector.dot(movement.moveVec, UP_VEC));
+        //movement.moveVec.x *= magnitude;
+        //movement.moveVec.y *= magnitude;
+
+        //movement.playerSlot = movement.nextSlot;
+        //correctMovement(playerId, movement, dstSlot, true);
+        
+        //// no suitable next step found finish step
+        //if(movement.nextSlot == null) {
+            //movement.nextSlot = currentNextSlot;
+            //movement.moveVec.x = dstSlot.rotX - movement.nextSlot.rotX;
+            //movement.moveVec.y = dstSlot.rotY - movement.nextSlot.rotY;
+            //magnitude = movement.moveVec.magnitude;
+            //movement.moveVec.normalise();
+
+            //movement.angle = Math.acos(Vector.dot(movement.moveVec, UP_VEC));
+            //movement.cost = magnitude;
+        //}
+    //}
 }
 
 // analyse all player slots and determine the least costly player to move with move
@@ -146,12 +181,15 @@ function findSuitableMovement(playerSlots, dstSlot, playerID, boardSlotNeighbour
         movement.playerSlot = playerSlots[i];
 
         if(dstSlot.rotY != playerSlots[i].rotY) {
-            correctMovement(playerID, movement);
+            correctMovement(playerID, movement, dstSlot, false);
             movement.playerSlot = playerSlots[i];
+
+            if(movement.nextSlot != null && (minMovement == null || movement.cost < minMovement.cost))
+                minMovement = movement;
         }
-        
-        if(movement.nextSlot != null && (minMovement == null || movement.nextSlot.cost < minMovement.cost))
-            minMovement = movement;
+        else {
+            console.log("Found destination on the same height as the player");
+        }
     }
 
     if(minMovement == null)
@@ -241,17 +279,13 @@ function shuffleNeighbours(playerID, slot) {
 function playAITurn(board, playerID, playerSlots, targetSlots) {
     board.forEach((slot) => {
         let rotation = playerID * 60;
-        const scale = 1000;
-        let location = rotatePoint(0.5, 0.5, slot.x * scale, slot.y * scale, rotation);
+        let location = rotatePoint(0, 0, (slot.x * 2 - 1), (slot.y * 2 - 1), rotation);
 
-        slot.rotX = location.x / scale;
-        slot.rotY = location.y / scale;
+        if(slot.x * 2 - 1 > 1 || slot.x * 2 - 1 < -1 || slot.y * 2 - 1 > 1 || slot.y * 2 - 1 < - 1)
+            console.log("Coordinate value overflow detected: {", slot.x * 2 - 1, " ", slot.y * 2 - 1, "}");
 
-        // shuffle slots as much as necessary
-        let n = 0;
-        if(prevPlayerId > playerID)
-            n = 6 - prevPlayerId + playerID;
-        else n = playerID - prevPlayerId;
+        slot.rotX = location.x;
+        slot.rotY = location.y;
     });
 
 
