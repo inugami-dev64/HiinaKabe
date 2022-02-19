@@ -27,7 +27,10 @@ let mainMenu_button_common = {
 let mainMenu_button_pvpGame = {
     index: 0,
     label: "tavasätted",
-    onClick: () => state = STATE_IN_GAME,
+    onClick: () => {
+      state = STATE_IN_GAME;
+      gameInfo = initGame();
+    },
 
 	...mainMenu_button_common,
 	...BUTTON_COMMON,
@@ -121,7 +124,8 @@ function drawButton(button) {
     // handle click events
     if(mouseIsPressed && !mouseLastPressed && button.hasOwnProperty('onClick')) button.onClick();
   } else {
-    button.step = max(0, button.step - 1.0 / 8.0);
+    button.step -= button.step * 0.2;
+    button.step = max(0, button.step - 1.0 / 24.0);
     button.scale = button.step;
   }
 
@@ -134,7 +138,7 @@ function drawButton(button) {
     if(!button.toggled()) fill(180+50, 20, 50, 1);
     else fill(0, 0, 70, 0.25);
   } else {
-    fill(180+c*100, abs(c) * 50, 70, 0.25 + 0.75 * button.scale);
+    fill(210+c*20, abs(c) * 50, 70, 0.25 + 0.75 * button.scale);
   }
   rectMode(CENTER);
   textAlign(CENTER, CENTER);
