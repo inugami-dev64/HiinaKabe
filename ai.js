@@ -46,7 +46,6 @@ class Movement {
 }
 
 const UP_VEC = new Vector(0.0, -1.0);
-let prevPlayerId = 0;
 
 
 // some non-sense function written by Rainis Randmaa
@@ -84,7 +83,6 @@ function slotCompareY(a, b) {
 
 function findSuitableTarget(board) {
     board.sort(slotCompareY);
-    console.log(board)
 
     // check if any of the destination slots are free
     for(let i = 0; i < board.length; i++) {
@@ -97,23 +95,48 @@ function findSuitableTarget(board) {
     return null;
 }
 
+//  * *
+// *   *
+//  * *
+
+// check if required neighbour is present and if it isn't pick a different neighbour to consider
+function checkNeighbourPresence(key, neighbours) {
+    let keyTable = {
+        "topLeftNeighbour": [ "topRightNeighbour", "leftNeighbour", "rightNeighbour", "bottomLeftNeighbour", "bottomRightNeighbour"],
+        "leftNeighbour": ["topLeftNeighbour", "bottomLeftNeighbour", "topRightNeighbour", "bottomRightNeighbour", "rightNeighbour"],
+        "bottomLeftNeighbour": ["leftNeighbour", "bottomRightNeighbour", "topLeftNeighbour", "rightNeighbour", "topRightNeighbour"],
+        "topRightNeighbour": ["rightNeighbour", "topLeftNeighbour", "bottomRightNeighbour", "leftNeighbour", "bottomLeftNeighbour"],
+        "rightNeighbour": ["bottomRightNeighbour", "topRightNeighbour", "bottomLeftNeighbour", "topLeftNeighbour", "rightNeighbour"],
+        "bottomRightNeighbour": ["bottomLeftNeighbour", "rightNeighbour", "leftNeighbour", "topRightNeighbour", "topLeftNeighbour"]
+    };
+
+    // movement in required direction is possible
+    if(neighbours[key] != undefined && (neighbours[key].color == 0 || (neighbours[key][key] != undefined && neighbours[key][key].color == 0)))
+        return neighbours[key];
+
+    for(adjKey of keyTable[key]) {
+        if(neighbours[adjKey] != undefined && (neighbours[adjKey].color == 0 || (neighbours[adjKey][adjKey] != undefined && neighbours[adjKey][adjKey].color == 0)))
+            return neighbours[adjKey];
+    }
+}
+
 
 function findNeighbourSlotFromAngle(x, angle, neighbours) {
     let nSlot = null;
     if(x <= 0) {
         if(angle >= 0 && angle < Math.PI / 3)
-            nSlot = neighbours.topLeftNeighbour;
+            nSlot = checkNeighbourPresence("topLeftNeighbour", neighbours);
         else if(angle >= Math.PI / 3 && angle < (2 * Math.PI) / 3)
-            nSlot = neighbours.leftNeighbour;
+            nSlot = checkNeighbourPresence("leftNeighbour", neighbours);
         else if(angle >= (2 * Math.PI) / 3)
-            nSlot = neighbours.bottomLeftNeighbour;
+            nSlot = checkNeighbourPresence("bottomLeftNeighbour", neighbours);
     } else {
         if(angle > 0 && angle <= Math.PI / 3)
-            nSlot = neighbours.topRightNeighbour;
+            nSlot = checkNeighbourPresence("topRightNeighbour", neighbours);
         else if(angle > Math.PI / 3 && angle <= (2 * Math.PI) / 3)
-            nSlot = neighbours.rightNeighbour;
+            nSlot = checkNeighbourPresence("rightNeighbour", neighbours);
         else if(angle > (2 * Math.PI) / 3)
-            nSlot = neighbours.bottomRightNeighbour;
+            nSlot = checkNeighbourPresence("bottomRightNeighbour", neighbours);
     }
 
     return nSlot;
@@ -123,7 +146,6 @@ function findNeighbourSlotFromAngle(x, angle, neighbours) {
 // this function might actually require some sort of path finding algorithm to be implemented
 function correctMovement(playerId, movement, dstSlot) {
     let player = movement.playerSlot;
-    let isJump = false;
 
     // movement loop
     let neighbours = shuffleNeighbours(playerId, movement.playerSlot);
@@ -160,7 +182,7 @@ function correctMovement(playerId, movement, dstSlot) {
 }
 
 // analyse all player slots and determine the least costly player to move with move
-function findSuitableMovement(playerSlots, dstSlot, playerID, boardSlotNeighbours) {
+function findSuitableMovement(playerSlots, dstSlot, playerID) {
     let minMovement = null;
     
     // search for slots with minimal cost
@@ -182,9 +204,8 @@ function findSuitableMovement(playerSlots, dstSlot, playerID, boardSlotNeighbour
 
             if(movement.nextSlot != null && (minMovement == null || movement.cost < minMovement.cost))
                 minMovement = movement;
-        }
-        else {
-            console.log("Found destination on the same height as the player");
+            else if(movement.nextSlot == null)
+                console.log("No next slot step found for current player piece");
         }
     }
 
@@ -280,9 +301,6 @@ function playAITurn(board, playerID, playerSlots, targetSlots) {
         let rotation = playerID * 60;
         let location = rotatePoint(0, 0, (slot.x * 2 - 1), (slot.y * 2 - 1), rotation);
 
-        if(slot.x * 2 - 1 > 1 || slot.x * 2 - 1 < -1 || slot.y * 2 - 1 > 1 || slot.y * 2 - 1 < - 1)
-            console.log("Coordinate value overflow detected: {", slot.x * 2 - 1, " ", slot.y * 2 - 1, "}");
-
         slot.rotX = location.x;
         slot.rotY = location.y;
     });
@@ -299,5 +317,4 @@ function playAITurn(board, playerID, playerSlots, targetSlots) {
     movement = findSuitableMovement(playerSlots, dstSlot, playerID);
     movement.nextSlot.color = movement.playerSlot.color;
     movement.playerSlot.color = 0;
-    prevPlayerId = playerID;
 }
