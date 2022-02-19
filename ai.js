@@ -98,69 +98,65 @@ function findSuitableTarget(board) {
 }
 
 
-// this function might actually require some sort of path finding algorithm to be implemented
-function correctMovement(playerId, movement, dstSlot, isJump) {
-    let neighbours = shuffleNeighbours(playerId, movement.playerSlot);
-
-    // check if any of the neighbours are colored and if not then quit without next slot to go to
-    //if((neighbours.topLeftNeighbour == null     || neighbours.topLeftNeighbour.color == 0) && 
-       //(neighbours.leftNeighbour == null        || neighbours.leftNeighbour.color == 0) && 
-       //(neighbours.bottomLeftNeighbour == null  || neighbours.bottomLeftNeighbour.color == 0) &&
-       //(neighbours.topRightNeighbour == null    || neighbours.topRightNeighbour.color == 0) && 
-       //(neighbours.rightNeighbour == null       || neighbours.rightNeighbour.color == 0) && 
-       //(neighbours.bottomRightNeighbour == null  || neighbours.bottomRightNeighbour.color == 0)) 
-        //return;
-
-    console.log("Movement cost in correctMovement(): ", movement.cost);
-    console.log("Movement angle in correctMovement(): ", movement.angle * 180 / Math.PI);
-    if(movement.moveVec.x <= 0) {
-        if(movement.angle >= 0 && movement.angle < Math.PI / 3)
-            movement.nextSlot = neighbours.topLeftNeighbour;
-        else if(movement.angle >= Math.PI / 3 && movement.angle < (2 * Math.PI) / 3)
-            movement.nextSlot = neighbours.leftNeighbour;
-        else if(movement.angle >= (2 * Math.PI) / 3)
-            movement.nextSlot = neighbours.bottomLeftNeighbour;
+function findNeighbourSlotFromAngle(x, angle, neighbours) {
+    let nSlot = null;
+    if(x <= 0) {
+        if(angle >= 0 && angle < Math.PI / 3)
+            nSlot = neighbours.topLeftNeighbour;
+        else if(angle >= Math.PI / 3 && angle < (2 * Math.PI) / 3)
+            nSlot = neighbours.leftNeighbour;
+        else if(angle >= (2 * Math.PI) / 3)
+            nSlot = neighbours.bottomLeftNeighbour;
     } else {
-        if(movement.angle > 0 && movement.angle <= Math.PI / 3)
-            movement.nextSlot = neighbours.topRightNeighbour;
-        else if(movement.angle > Math.PI / 3 && movement.angle <= (2 * Math.PI) / 3)
-            movement.nextSlot = neighbours.rightNeighbour;
-        else if(movement.angle > (2 * Math.PI) / 3)
-            movement.nextSlot = neighbours.bottomRightNeighbour;
+        if(angle > 0 && angle <= Math.PI / 3)
+            nSlot = neighbours.topRightNeighbour;
+        else if(angle > Math.PI / 3 && angle <= (2 * Math.PI) / 3)
+            nSlot = neighbours.rightNeighbour;
+        else if(angle > (2 * Math.PI) / 3)
+            nSlot = neighbours.bottomRightNeighbour;
     }
 
-    // recursively check find the jump destination 
-    //if(movement.nextSlot != null && movement.nextSlot.color != 0) {
-        //movement.moveVec.x = dstSlot.rotX - movement.nextSlot.rotX;
-        //movement.moveVec.y = dstSlot.rotY - movement.nextSlot.rotY;
-        //movement.cost = movement.moveVec.magnitude;
-        //movement.playerSlot = movement.nextSlot;
-        //movement.nextSlot = null;
-        //correctMovement(playerId, movement, dstSlot, true);
-    //} else if(movement.nextSlot != null && isJump == true) {
-        //let currentNextSlot = movement.nextSlot;
-        //let magnitude = movement.moveVec.magnitude;
+    return nSlot;
+}
 
-        //movement.moveVec.normalise();
-        //movement.angle = Math.acos(Vector.dot(movement.moveVec, UP_VEC));
-        //movement.moveVec.x *= magnitude;
-        //movement.moveVec.y *= magnitude;
 
-        //movement.playerSlot = movement.nextSlot;
-        //correctMovement(playerId, movement, dstSlot, true);
-        
-        //// no suitable next step found finish step
-        //if(movement.nextSlot == null) {
-            //movement.nextSlot = currentNextSlot;
-            //movement.moveVec.x = dstSlot.rotX - movement.nextSlot.rotX;
-            //movement.moveVec.y = dstSlot.rotY - movement.nextSlot.rotY;
-            //magnitude = movement.moveVec.magnitude;
-            //movement.moveVec.normalise();
+// this function might actually require some sort of path finding algorithm to be implemented
+function correctMovement(playerId, movement, dstSlot) {
+    let player = movement.playerSlot;
+    let isJump = false;
 
-            //movement.angle = Math.acos(Vector.dot(movement.moveVec, UP_VEC));
-            //movement.cost = magnitude;
-        //}
-    //}
+    // movement loop
+    let neighbours = shuffleNeighbours(playerId, movement.playerSlot);
+    movement.nextSlot = findNeighbourSlotFromAngle(movement.moveVec.x, movement.angle, neighbours);
+
+    // check if destination slot is taken by player
+    let prevStep = null;
+    while(movement.nextSlot != null && movement.nextSlot !== prevStep && movement.nextSlot.color != 0) {
+        movement.playerSlot = movement.nextSlot;
+
+        neighbours = shuffleNeighbours(playerId, movement.playerSlot);
+        movement.nextSlot = findNeighbourSlotFromAngle(movement.moveVec.x, movement.angle, neighbours);
+
+        if(movement.nextSlot == null || movement.nextSlot === prevStep || (movement.playerSlot.color == 0 && movement.nextSlot.color == 0) || (movement.playerSlot.color != 0 && movement.nextSlot.color != 0)) {
+            movement.nextSlot = prevStep;
+            break;
+        }
+
+        else if(movement.nextSlot === 0) {
+            // calculate new angle and destination neighbour from it
+            movement.moveVec.x = dstSlot.rotX - movement.playerSlot.rotX;
+            movement.moveVec.y = dstSlot.rotY - movement.playerSlot.rotY;
+            movement.cost = movement.moveVec.magnitude;
+            movement.moveVec.normalise();
+            movement.angle = Math.acos(Vector.dot(movement.moveVec, UP_VEC));
+            prevStep = movement.nextSlot;
+        }
+    }
+
+    if(movement.nextSlot == null)
+        movement.cost = Number.MAX_VALUE;
+
+    movement.playerSlot = player;
 }
 
 // analyse all player slots and determine the least costly player to move with move
@@ -180,8 +176,8 @@ function findSuitableMovement(playerSlots, dstSlot, playerID, boardSlotNeighbour
         movement.moveVec.y *= movement.cost;
         movement.playerSlot = playerSlots[i];
 
-        if(dstSlot.rotY != playerSlots[i].rotY) {
-            correctMovement(playerID, movement, dstSlot, false);
+        if(dstSlot.rotY < playerSlots[i].rotY) {
+            correctMovement(playerID, movement, dstSlot);
             movement.playerSlot = playerSlots[i];
 
             if(movement.nextSlot != null && (minMovement == null || movement.cost < minMovement.cost))
@@ -200,18 +196,21 @@ function findSuitableMovement(playerSlots, dstSlot, playerID, boardSlotNeighbour
 
 function shuffleNeighbours(playerID, slot) {
     let topLeftNeighbour = "topLeftNeighbour";
-    let topRightNeighbour = "topRightNeighbour";
-    let bottomLeftNeighbour = "bottomLeftNeighbour";
-    let bottomRightNeighbour = "bottomRightNeighbour";
     let leftNeighbour = "leftNeighbour";
+    let bottomLeftNeighbour = "bottomLeftNeighbour";
+    let topRightNeighbour = "topRightNeighbour";
     let rightNeighbour = "rightNeighbour";
+    let bottomRightNeighbour = "bottomRightNeighbour";
 
     switch(playerID) {
+        case 0:
+            break;
+
         case 1:
             topLeftNeighbour = "leftNeighbour";
             leftNeighbour = "bottomLeftNeighbour";
             bottomLeftNeighbour = "bottomRightNeighbour";
-            bottomRightNeighbour = "topRightNeighbour";
+            bottomRightNeighbour = "rightNeighbour";
             rightNeighbour = "topRightNeighbour";
             topRightNeighbour = "topLeftNeighbour";
             break;
@@ -220,8 +219,8 @@ function shuffleNeighbours(playerID, slot) {
             topLeftNeighbour = "bottomLeftNeighbour";
             leftNeighbour = "bottomRightNeighbour";
             bottomLeftNeighbour = "rightNeighbour";
-            bottomRightNeighbour = "topRightNeighbour";
             rightNeighbour = "topLeftNeighbour";
+            bottomRightNeighbour = "topRightNeighbour";
             topRightNeighbour = "leftNeighbour";
             break;
 
@@ -263,7 +262,7 @@ function shuffleNeighbours(playerID, slot) {
         "bottomLeftNeighbour": slot[bottomLeftNeighbour],
         "bottomRightNeighbour": slot[bottomRightNeighbour],
         "rightNeighbour": slot[rightNeighbour],
-        "topRightNeighbour": slot[topLeftNeighbour]
+        "topRightNeighbour": slot[topRightNeighbour]
     };
 }
 
