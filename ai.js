@@ -100,43 +100,69 @@ function findSuitableTarget(board) {
 //  * *
 
 // check if required neighbour is present and if it isn't pick a different neighbour to consider
-function checkNeighbourPresence(key, neighbours) {
+function checkNeighbourPresence(key, playerId, neighbours) {
     let keyTable = {
-        "topLeftNeighbour": [ "topRightNeighbour", "leftNeighbour", "rightNeighbour", "bottomLeftNeighbour", "bottomRightNeighbour"],
-        "leftNeighbour": ["topLeftNeighbour", "bottomLeftNeighbour", "topRightNeighbour", "bottomRightNeighbour", "rightNeighbour"],
-        "bottomLeftNeighbour": ["leftNeighbour", "bottomRightNeighbour", "topLeftNeighbour", "rightNeighbour", "topRightNeighbour"],
-        "topRightNeighbour": ["rightNeighbour", "topLeftNeighbour", "bottomRightNeighbour", "leftNeighbour", "bottomLeftNeighbour"],
-        "rightNeighbour": ["bottomRightNeighbour", "topRightNeighbour", "bottomLeftNeighbour", "topLeftNeighbour", "rightNeighbour"],
-        "bottomRightNeighbour": ["bottomLeftNeighbour", "rightNeighbour", "leftNeighbour", "topRightNeighbour", "topLeftNeighbour"]
+        "topLeftNeighbour": {
+            "neighbours": shuffleNeighbours(playerId, neighbours.topLeftNeighbour),
+            "keys": [ "topRightNeighbour", "leftNeighbour", "rightNeighbour", "bottomLeftNeighbour", "bottomRightNeighbour" ]
+        },
+
+        "leftNeighbour": {
+            "neighbours": shuffleNeighbours(playerId, neighbours.leftNeighbour),
+            "keys": [ "topLeftNeighbour", "bottomLeftNeighbour", "topRightNeighbour", "bottomRightNeighbour", "rightNeighbour" ]
+        },
+
+        "bottomLeftNeighbour": {
+            "neighbours": shuffleNeighbours(playerId, neighbours.bottomLeftNeighbour),
+            "keys": [ "leftNeighbour", "bottomRightNeighbour", "topLeftNeighbour", "rightNeighbour", "topRightNeighbour" ],
+        },
+
+        "topRightNeighbour": {
+            "neighbours": shuffleNeighbours(playerId, neighbours.topRightNeighbour),
+            "keys": [ "rightNeighbour", "topLeftNeighbour", "bottomRightNeighbour", "leftNeighbour", "bottomLeftNeighbour" ]
+        },
+
+        "rightNeighbour": {
+            "neighbours": shuffleNeighbours(playerId, neighbours.rightNeighbour),
+            "keys": [ "bottomRightNeighbour", "topRightNeighbour", "bottomLeftNeighbour", "topLeftNeighbour", "rightNeighbour" ]
+        },
+
+        "bottomRightNeighbour": {
+            "neighbours": shuffleNeighbours(playerId, neighbours.bottomRightNeighbour),
+            "keys": [ "bottomLeftNeighbour", "rightNeighbour", "leftNeighbour", "topRightNeighbour", "topLeftNeighbour" ]
+        }
     };
 
     // movement in required direction is possible
-    if(neighbours[key] != undefined && (neighbours[key].color == 0 || (neighbours[key][key] != undefined && neighbours[key][key].color == 0)))
+    if(neighbours[key] != undefined && (neighbours[key].color == 0 || (keyTable[key].neighbours[key] != undefined && keyTable[key].neighbours[key].color == 0))) {
         return neighbours[key];
+    }
 
-    for(adjKey of keyTable[key]) {
-        if(neighbours[adjKey] != undefined && (neighbours[adjKey].color == 0 || (neighbours[adjKey][adjKey] != undefined && neighbours[adjKey][adjKey].color == 0)))
+    for(adjKey of keyTable[key].keys) {
+        if(neighbours[adjKey] != undefined && (neighbours[adjKey].color == 0 || (keyTable[adjKey].neighbours[adjKey] != undefined && keyTable[adjKey].neighbours[adjKey].color == 0)))
             return neighbours[adjKey];
     }
+
+    return undefined;
 }
 
 
-function findNeighbourSlotFromAngle(x, angle, neighbours) {
+function findNeighbourSlotFromAngle(x, angle, playerId, neighbours) {
     let nSlot = null;
     if(x <= 0) {
         if(angle >= 0 && angle < Math.PI / 3)
-            nSlot = checkNeighbourPresence("topLeftNeighbour", neighbours);
+            nSlot = checkNeighbourPresence("topLeftNeighbour", playerId, neighbours);
         else if(angle >= Math.PI / 3 && angle < (2 * Math.PI) / 3)
-            nSlot = checkNeighbourPresence("leftNeighbour", neighbours);
+            nSlot = checkNeighbourPresence("leftNeighbour", playerId, neighbours);
         else if(angle >= (2 * Math.PI) / 3)
-            nSlot = checkNeighbourPresence("bottomLeftNeighbour", neighbours);
+            nSlot = checkNeighbourPresence("bottomLeftNeighbour", playerId, neighbours);
     } else {
         if(angle > 0 && angle <= Math.PI / 3)
-            nSlot = checkNeighbourPresence("topRightNeighbour", neighbours);
+            nSlot = checkNeighbourPresence("topRightNeighbour", playerId, neighbours);
         else if(angle > Math.PI / 3 && angle <= (2 * Math.PI) / 3)
-            nSlot = checkNeighbourPresence("rightNeighbour", neighbours);
+            nSlot = checkNeighbourPresence("rightNeighbour", playerId, neighbours);
         else if(angle > (2 * Math.PI) / 3)
-            nSlot = checkNeighbourPresence("bottomRightNeighbour", neighbours);
+            nSlot = checkNeighbourPresence("bottomRightNeighbour", playerId, neighbours);
     }
 
     return nSlot;
@@ -149,7 +175,7 @@ function correctMovement(playerId, movement, dstSlot) {
 
     // movement loop
     let neighbours = shuffleNeighbours(playerId, movement.playerSlot);
-    movement.nextSlot = findNeighbourSlotFromAngle(movement.moveVec.x, movement.angle, neighbours);
+    movement.nextSlot = findNeighbourSlotFromAngle(movement.moveVec.x, movement.angle, playerId, neighbours);
 
     // check if destination slot is taken by player
     let prevStep = null;
@@ -157,7 +183,7 @@ function correctMovement(playerId, movement, dstSlot) {
         movement.playerSlot = movement.nextSlot;
 
         neighbours = shuffleNeighbours(playerId, movement.playerSlot);
-        movement.nextSlot = findNeighbourSlotFromAngle(movement.moveVec.x, movement.angle, neighbours);
+        movement.nextSlot = findNeighbourSlotFromAngle(movement.moveVec.x, movement.angle, playerId, neighbours);
 
         if(movement.nextSlot == null || movement.nextSlot === prevStep || (movement.playerSlot.color == 0 && movement.nextSlot.color == 0) || (movement.playerSlot.color != 0 && movement.nextSlot.color != 0)) {
             movement.nextSlot = prevStep;
@@ -181,8 +207,8 @@ function correctMovement(playerId, movement, dstSlot) {
     movement.playerSlot = player;
 }
 
-// analyse all player slots and determine the least costly player to move with move
-function findSuitableMovement(playerSlots, dstSlot, playerID) {
+
+function findMinimalMovement(movementCondCallback, playerSlots, dstSlot, playerId) {
     let minMovement = null;
     
     // search for slots with minimal cost
@@ -198,8 +224,8 @@ function findSuitableMovement(playerSlots, dstSlot, playerID) {
         movement.moveVec.y *= movement.cost;
         movement.playerSlot = playerSlots[i];
 
-        if(dstSlot.rotY < playerSlots[i].rotY) {
-            correctMovement(playerID, movement, dstSlot);
+        if(movementCondCallback(dstSlot, playerSlots[i])) {
+            correctMovement(playerId, movement, dstSlot);
             movement.playerSlot = playerSlots[i];
 
             if(movement.nextSlot != null && (minMovement == null || movement.cost < minMovement.cost))
@@ -209,13 +235,23 @@ function findSuitableMovement(playerSlots, dstSlot, playerID) {
         }
     }
 
-    if(minMovement == null)
-        throw "Could not find the minimal movement path";
+    return minMovement;
+}
+
+// analyse all player slots and determine the least costly player to move with move
+function findSuitableMovement(playerSlots, dstSlot, playerId) {
+    let minMovement = findMinimalMovement((dst, player) => { dst.rotY < player.rotY }, playerSlots, dstSlot, playerId);
+
+    if(minMovement == null) {
+        minMovement = findMinimalMovement((dst, player) => true, playerSlots, dstSlot, playerId);
+    }
 
     return minMovement;
 }
 
+
 function shuffleNeighbours(playerID, slot) {
+    if(slot == undefined) return undefined;
     let topLeftNeighbour = "topLeftNeighbour";
     let leftNeighbour = "leftNeighbour";
     let bottomLeftNeighbour = "bottomLeftNeighbour";
@@ -314,7 +350,10 @@ function playAITurn(board, playerID, playerSlots, targetSlots) {
     if(dstSlot == null)
         throw "All slots in game are occupied? Not good";
 
-    movement = findSuitableMovement(playerSlots, dstSlot, playerID);
+    movement = findMinimalMovement((dst, player) => dst.rotY < player.rotY, playerSlots, dstSlot, playerID);
+    if(movement == null)
+        movement = findMinimalMovement((dst, player) => true, playerSlots, dstSlot, playerID);
+
     movement.nextSlot.color = movement.playerSlot.color;
     movement.playerSlot.color = 0;
 }

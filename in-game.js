@@ -403,11 +403,11 @@ function initGame() {
         round: 0,
         playerSlotOnClick: undefined,
         players: [
-            { isAI: false },
             { isAI: true },
-            { isAI: false },
             { isAI: true },
-            { isAI: false },
+            { isAI: true },
+            { isAI: true },
+            { isAI: true },
             { isAI: true },
         ],
     };
@@ -500,7 +500,7 @@ function gameStep(gameInfo) {
         setTimeout(() => {
             playAITurn(gameInfo.board, gameInfo.currentPlayerID, findPlayerSlots(gameInfo.board, gameInfo.currentPlayerID), gameInfo.targetSlots);
             gameInfo.state = GAME_STATE_FINISHED;
-        }, 1000+Math.random()*1000);
+        }, 100+Math.random()*100);
     }
     // If the current player is not an AI
     else {
