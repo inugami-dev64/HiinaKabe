@@ -75,7 +75,7 @@ let ig_mouseIsPressedLast = true;
     @returns {{board: [Slot], targetSlots: [[Slot]]}}
     Generates a game board. Returns an array with target slots for each player, where array index is playerID.
 */
-function generateBoard() {
+function generateBoard(players) {
     // width: number, x: number [0.0 - 1.0], y: number [0.0 - 1.0]
     const generateRow = (width, x, y) => {
         let arr = [];
@@ -204,7 +204,7 @@ function generateBoard() {
 
     // Color player slots
     collectedSlots.forEach((slots, i) => {
-        slots.forEach((slot) => {
+        if(players[i].enabled) slots.forEach((slot) => {
             slot.color = 1+i;
         });
     });
@@ -322,22 +322,22 @@ function findPlayerSlots(board, playerID) {
  */
 function slotHasJumpingPossibility(slot, except = null) {
     if(slot.topLeftNeighbour && slot.topLeftNeighbour.topLeftNeighbour && slot.topLeftNeighbour.color && 
-            slot.topLeftNeighbour.color != slot.color && !slot.topLeftNeighbour.topLeftNeighbour.color && slot.topLeftNeighbour.topLeftNeighbour != except) 
+            !slot.topLeftNeighbour.topLeftNeighbour.color && slot.topLeftNeighbour.topLeftNeighbour != except) 
         return true;
     if(slot.topRightNeighbour && slot.topRightNeighbour.topRightNeighbour && slot.topRightNeighbour.color && 
-            slot.topRightNeighbour.color != slot.color && !slot.topRightNeighbour.topRightNeighbour.color && slot.topRightNeighbour.topRightNeighbour != except) 
+            !slot.topRightNeighbour.topRightNeighbour.color && slot.topRightNeighbour.topRightNeighbour != except) 
         return true;
     if(slot.bottomLeftNeighbour && slot.bottomLeftNeighbour.bottomLeftNeighbour && slot.bottomLeftNeighbour.color && 
-            slot.bottomLeftNeighbour.color != slot.color && !slot.bottomLeftNeighbour.bottomLeftNeighbour.color && slot.bottomLeftNeighbour.bottomLeftNeighbour != except) 
+            !slot.bottomLeftNeighbour.bottomLeftNeighbour.color && slot.bottomLeftNeighbour.bottomLeftNeighbour != except) 
         return true;
     if(slot.bottomRightNeighbour && slot.bottomRightNeighbour.bottomRightNeighbour && slot.bottomRightNeighbour.color && 
-            slot.bottomRightNeighbour.color != slot.color && !slot.bottomRightNeighbour.bottomRightNeighbour.color && slot.bottomRightNeighbour.bottomRightNeighbour != except) 
+            !slot.bottomRightNeighbour.bottomRightNeighbour.color && slot.bottomRightNeighbour.bottomRightNeighbour != except) 
         return true;
     if(slot.leftNeighbour && slot.leftNeighbour.leftNeighbour && slot.leftNeighbour.color && 
-            slot.leftNeighbour.color != slot.color && !slot.leftNeighbour.leftNeighbour.color && slot.leftNeighbour.leftNeighbour != except) 
+            !slot.leftNeighbour.leftNeighbour.color && slot.leftNeighbour.leftNeighbour != except) 
         return true;
     if(slot.rightNeighbour && slot.rightNeighbour.rightNeighbour && slot.rightNeighbour.color && 
-            slot.rightNeighbour.color != slot.color && !slot.rightNeighbour.rightNeighbour.color && slot.rightNeighbour.rightNeighbour != except) 
+            !slot.rightNeighbour.rightNeighbour.color && slot.rightNeighbour.rightNeighbour != except) 
         return true;
     
     return false;
@@ -349,12 +349,12 @@ function slotHasJumpingPossibility(slot, except = null) {
     Checks if 'target' is one block away from 'slot', meaning a jump occurred.
  */
 function hasJumped(slot, target) {
-    if(slot.topLeftNeighbour && slot.topLeftNeighbour.color && slot.topLeftNeighbour.color != slot.color && slot.topLeftNeighbour.topLeftNeighbour == target && !slot.topLeftNeighbour.topLeftNeighbour.color) return true;
-    if(slot.topRightNeighbour && slot.topRightNeighbour.color && slot.topRightNeighbour.color != slot.color && slot.topRightNeighbour.topRightNeighbour == target && !slot.topRightNeighbour.topRightNeighbour.color) return true;
-    if(slot.bottomLeftNeighbour && slot.bottomLeftNeighbour.color && slot.bottomLeftNeighbour.color != slot.color && slot.bottomLeftNeighbour.bottomLeftNeighbour == target && !slot.bottomLeftNeighbour.bottomLeftNeighbour.color) return true;
-    if(slot.bottomRightNeighbour && slot.bottomRightNeighbour.color && slot.bottomRightNeighbour.color != slot.color && slot.bottomRightNeighbour.bottomRightNeighbour == target && !slot.bottomRightNeighbour.bottomRightNeighbour.color) return true;
-    if(slot.leftNeighbour && slot.leftNeighbour.color && slot.leftNeighbour.color != slot.color && slot.leftNeighbour.leftNeighbour == target && !slot.leftNeighbour.leftNeighbour.color) return true;
-    if(slot.rightNeighbour && slot.rightNeighbour.color && slot.rightNeighbour.color != slot.color && slot.rightNeighbour.rightNeighbour == target && !slot.rightNeighbour.rightNeighbour.color) return true;
+    if(slot.topLeftNeighbour && slot.topLeftNeighbour.color && slot.topLeftNeighbour.topLeftNeighbour == target && !slot.topLeftNeighbour.topLeftNeighbour.color) return true;
+    if(slot.topRightNeighbour && slot.topRightNeighbour.color && slot.topRightNeighbour.topRightNeighbour == target && !slot.topRightNeighbour.topRightNeighbour.color) return true;
+    if(slot.bottomLeftNeighbour && slot.bottomLeftNeighbour.color && slot.bottomLeftNeighbour.bottomLeftNeighbour == target && !slot.bottomLeftNeighbour.bottomLeftNeighbour.color) return true;
+    if(slot.bottomRightNeighbour && slot.bottomRightNeighbour.color && slot.bottomRightNeighbour.bottomRightNeighbour == target && !slot.bottomRightNeighbour.bottomRightNeighbour.color) return true;
+    if(slot.leftNeighbour && slot.leftNeighbour.color && slot.leftNeighbour.leftNeighbour == target && !slot.leftNeighbour.leftNeighbour.color) return true;
+    if(slot.rightNeighbour && slot.rightNeighbour.color && slot.rightNeighbour.rightNeighbour == target && !slot.rightNeighbour.rightNeighbour.color) return true;
 
     return false;
 }
@@ -392,8 +392,8 @@ function isReachable(slot, target) {
     Initializes board, player slots, resets round counter etc. 
     Initializes/restarts the whole game.
  */
-function initGame() {
-    let boardData = generateBoard();
+function initGame(players) {
+    let boardData = generateBoard(players);
     return {
         board: boardData.board,
         targetSlots: boardData.targetSlots,
@@ -402,15 +402,12 @@ function initGame() {
         turnTempData: {},
         round: 0,
         playerSlotOnClick: undefined,
-        players: [
-            { isAI: false },
-            { isAI: true },
-            { isAI: false },
-            { isAI: true },
-            { isAI: false },
-            { isAI: true },
-        ],
+        players: players,
     };
+}
+
+function hasPlayerWon(gameInfo, playerID) {
+    return !gameInfo.targetSlots[playerID].some((slot) => slot.color-1 != playerID);
 }
 
 // ##################
@@ -485,10 +482,18 @@ function gameStep(gameInfo) {
 
     // Callbacks must change gameInfo.state to GAME_STATE_FINISHED to end the round
     if(gameInfo.state == GAME_STATE_FINISHED) {
+        if(hasPlayerWon(gameInfo, gameInfo.currentPlayerID)) {
+            gameInfo.winner = gameInfo.currentPlayerID;
+            setState(STATE_WON);
+            return;
+        }
+
         // End turn
         gameInfo.turnTempData = {};
-        gameInfo.currentPlayerID = (gameInfo.currentPlayerID + 1) % 6; 
-        gameInfo.round++;
+        do {
+            gameInfo.currentPlayerID = (gameInfo.currentPlayerID + 1) % 6; 
+            gameInfo.round++;
+        } while(!gameInfo.players[gameInfo.currentPlayerID].enabled);
         gameInfo.state = GAME_STATE_NONE;
         gameInfo.playerSlotOnClick = null;
     }
@@ -531,9 +536,19 @@ function gameStep(gameInfo) {
 
 
 function animateBoardScale() {
+    let targetPlayerID = gameInfo.currentPlayerID;
+
+    // Calculate how many not enabled players were skipped
+    let playerSpacing = 1;
+    for(let i = (targetPlayerID-1+6)%6; !gameInfo.players[i].enabled; i = (i - 1 + 6) % 6) {
+        playerSpacing++;
+    }
+    console.log('playerSpacing:', playerSpacing);
+
     let baseScale = min(windowWidth, windowHeight);
     rotation += ((gameInfo.round / 6 * 360) - rotation) * 0.04;
-    let zoomOut = sin((rotation % 60) / 60 * 180) * baseScale * ZOOM_OUT_SPEED;
+    let baseRotation = (gameInfo.round - playerSpacing) / 6 * 360;
+    let zoomOut = sin((rotation - baseRotation) / (60  * playerSpacing) * 180) * baseScale * ZOOM_OUT_SPEED;
 
     return baseScale - zoomOut;
 }

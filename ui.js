@@ -1,11 +1,12 @@
 const STATE_MAIN_MENU = 0;
 const STATE_PAUSE = 1;
 const STATE_CUSTOM_GAME = 2;
-const STATE_GAME_FINISHED = 3;
+const STATE_WON = 3;
 const STATE_CREDITS = 4;
 const STATE_IN_GAME = 5;
 
 let state = STATE_MAIN_MENU;
+let prevState = null;
 
 /* STYLES */
 let BUTTON_COMMON = {
@@ -28,8 +29,15 @@ let mainMenu_button_pvpGame = {
     index: 0,
     label: "tavasätted",
     onClick: () => {
-      state = STATE_IN_GAME;
-      gameInfo = initGame();
+      setState(STATE_IN_GAME);
+      gameInfo = initGame([
+        { enabled: true, isAI: false },
+        { enabled: true, isAI: false },
+        { enabled: true, isAI: false },
+        { enabled: true,  isAI: false },
+        { enabled: true,  isAI: false },
+        { enabled: true,  isAI: false },
+      ]);
     },
 
 	...mainMenu_button_common,
@@ -39,7 +47,7 @@ let mainMenu_button_pvpGame = {
 let mainMenu_button_pvcGame = {
     index: 1,
     label: "kohandatud mäng",
-    onClick: () => state = STATE_CUSTOM_GAME,
+    onClick: () => setState(STATE_CUSTOM_GAME),
 
 	...mainMenu_button_common,
 	...BUTTON_COMMON,
@@ -47,7 +55,7 @@ let mainMenu_button_pvcGame = {
 
 let mainMenu_button_creditsGame = {
 	index: 2,
-	label: "Koostajad",
+	label: "koostajad",
 
 	...mainMenu_button_common,
 	...BUTTON_COMMON,
@@ -71,6 +79,15 @@ function setup() {
   colorMode(HSB, 360, 100, 100, 1);
 }
 
+function setState(newState) {
+  switch(newState) {
+    case STATE_WON:
+      initWon(gameInfo);
+      break;
+  }
+  state = newState;
+}
+
 function draw() {
   background(0);
 
@@ -90,8 +107,8 @@ function draw() {
       renderCustomGameMenu();
     };
     break;
-    case STATE_GAME_FINISHED: {
-
+    case STATE_WON: {
+      renderWon(gameInfo.winner);
     };
     break;
     case STATE_CREDITS: {
@@ -135,7 +152,7 @@ function drawButton(button) {
   
   noStroke();
   if(button.toggled) {
-    if(!button.toggled()) fill(180+50, 20, 50, 1);
+    if(button.toggled()) fill(180+50, 20, 50, 1);
     else fill(0, 0, 70, 0.25);
   } else {
     fill(210+c*20, abs(c) * 50, 70, 0.25 + 0.75 * button.scale);
@@ -148,7 +165,8 @@ function drawButton(button) {
   rotate(button.scale * radians((mouseX - x) / w * 5));
   rect(0, 0, w, h, h);
   fill(0, 0, 100);
-  text(button.label, 0, 0);
+  if(typeof button.label == "function") text(button.label(), 0, 0);
+  else text(button.label, 0, 0);
   pop();
 }
 

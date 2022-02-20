@@ -27,14 +27,15 @@ function shuffleArray(array) {
 
 function sqr(a) { return a*a; }
 
+// uses p5.js sin & cos functions
 function rotatePoint(centerX, centerY, pointX, pointY, angle) {
-    // angle = radians(angle);
     return {
         x: cos(angle) * (pointX - centerX) - sin(angle) * (pointY - centerY) + centerX,
         y: sin(angle) * (pointX - centerX) + cos(angle) * (pointY - centerY) + centerY,
     };
 }
 
+// source: easings.net
 function easeInElastic(x) {
     const c4 = (2 * Math.PI) / 3;
 
