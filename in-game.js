@@ -60,6 +60,20 @@ let BUTTON_END_ROUND = {
     h: function() { return this._height },
 };
 
+let BURRON_QUIT = {
+    label: 'lõpeta mäng',
+    _width: 256,
+    _height: 40,
+    _padding: 32,
+    step: 0,
+    scale: 0,
+    onClick: () => { state = STATE_MAIN_MENU; },
+    x: function() { return this._width/2 + this._padding },
+    y: function() { return windowHeight - this._height/2 - this._padding },
+    w: function() { return this._width },
+    h: function() { return this._height },
+};
+
 // using ig_ prefix to avoid overlapping names with ui.js
 let ig_mouseIsPressedLast = true;
 
@@ -212,7 +226,7 @@ function generateBoard(players) {
     // Identify players' target slots
     let targetSlots = [];
     targetSlots.length = collectedSlots.length;
-    collectedSlots.forEach((slot, i) => targetSlots[(i+6) % 6] = slot);
+    collectedSlots.forEach((slots, i) => targetSlots[(i+3) % 6] = slots);
 
     board.forEach(slot => {
         slot.x /= SPECTRUM_X;
@@ -527,6 +541,13 @@ function gameStep(gameInfo) {
     }
 }
 
+/**
+    Called when game starts. Used to reset old animation values.
+ */
+function initInGame() {
+    rotation = 0;
+}
+
 
 // #################
 // #               #
@@ -543,7 +564,6 @@ function animateBoardScale() {
     for(let i = (targetPlayerID-1+6)%6; !gameInfo.players[i].enabled; i = (i - 1 + 6) % 6) {
         playerSpacing++;
     }
-    console.log('playerSpacing:', playerSpacing);
 
     let baseScale = min(windowWidth, windowHeight);
     rotation += ((gameInfo.round / 6 * 360) - rotation) * 0.04;
@@ -572,6 +592,7 @@ function renderGame() {
     if(gameInfo.state == GAME_STATE_JUMP && gameInfo.turnTempData.pickedSlot != gameInfo.turnTempData.started) {
         drawButton(BUTTON_END_ROUND);
     }
+    drawButton(BURRON_QUIT);
 
     ig_mouseIsPressedLast = mouseIsPressed;
 }
