@@ -78,7 +78,7 @@ let CUSTOM_GAME_BUTTON_START = {
     scale: 0,
     x: function() { return windowWidth - this.w()/2 - this._padding },
     y: function() { return windowHeight - this._height/2 - this._padding },
-    w: function() { return min(this._width, (windowWidth - this._padding * 3 )/ 2) },
+    w: function() { return min(this._width, (windowWidth - this._padding * 4 )/ 3) },
     h: function() { return this._height },
     onClick: () => {
         gameInfo = initCustomGame(currentOptions.players);
@@ -96,7 +96,21 @@ let CUSTOM_GAME_BUTTON_CHANGE_NUM_PLAYERS = {
     onClick: () => currentOptions.numPlayers = [0, 3, 4, 5, 6, 2][currentOptions.numPlayers-1],
     x: function() { return this.w()/2 + this._padding },
     y: function() { return windowHeight - this._height/2 - this._padding },
-    w: function() { return min(this._width, (windowWidth - this._padding * 3 ) / 2) },
+    w: function() { return min(this._width, (windowWidth - this._padding * 4 ) / 3) },
+    h: function() { return this._height },
+};
+
+let CUSTOM_GAME_BUTTON_GO_BACK = {
+    label: 'tagasi',
+    _width: 256,
+    _height: 40,
+    _padding: 32,
+    step: 0,
+    scale: 0,
+    onClick: () => setState(STATE_MAIN_MENU),
+    x: function() { return windowWidth/2 },
+    y: function() { return windowHeight - this._height/2 - this._padding },
+    w: function() { return min(this._width, (windowWidth - this._padding * 4 ) / 3) },
     h: function() { return this._height },
 };
 
@@ -116,6 +130,7 @@ function renderCustomGameMenu() {
     drawButton(CUSTOM_GAME_BUTTON_PLAYER_5);
     drawButton(CUSTOM_GAME_BUTTON_PLAYER_6);
     drawButton(CUSTOM_GAME_BUTTON_CHANGE_NUM_PLAYERS);
+    drawButton(CUSTOM_GAME_BUTTON_GO_BACK);
 
     if(currentOptions.numPlayers == 5) {
         push();

@@ -27,11 +27,12 @@ function shuffleArray(array) {
 
 function sqr(a) { return a*a; }
 
-// uses p5.js sin & cos functions
+// Uses p5.js sin & cos functions. Expects degrees
 function rotatePoint(centerX, centerY, pointX, pointY, angle) {
+    angle = angle * (Math.PI / 180);
     return {
-        x: cos(angle) * (pointX - centerX) - sin(angle) * (pointY - centerY) + centerX,
-        y: sin(angle) * (pointX - centerX) + cos(angle) * (pointY - centerY) + centerY,
+        x: Math.cos(angle) * (pointX - centerX) - Math.sin(angle) * (pointY - centerY) + centerX,
+        y: Math.sin(angle) * (pointX - centerX) + Math.cos(angle) * (pointY - centerY) + centerY,
     };
 }
 
