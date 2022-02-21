@@ -213,7 +213,7 @@ function generateBoard(players) {
     // Identify player slots
     let collectedSlots = [];
     playerSlots.forEach((slot, i) => {
-        collectedSlots.push(collectSlotRows(slot, 1));
+        collectedSlots.push(collectSlotRows(slot, 4));
     });
 
     // Color player slots
