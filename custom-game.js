@@ -117,5 +117,15 @@ function renderCustomGameMenu() {
     drawButton(CUSTOM_GAME_BUTTON_PLAYER_6);
     drawButton(CUSTOM_GAME_BUTTON_CHANGE_NUM_PLAYERS);
 
+    if(currentOptions.numPlayers == 5) {
+        push();
+        textAlign(CENTER, CENTER);
+        fill(0, 0, 100);
+        translate(windowWidth/2,  - 64);
+        textSize(windowWidth / 25);
+        text("5 inimesega mängides on ühel eelis", 0, 0);
+        pop();
+    }
+
     pop();
 }

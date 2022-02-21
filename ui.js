@@ -59,7 +59,7 @@ function draw() {
     push();
     switch(state) {
         case STATE_MAIN_MENU: {
-			drawMainMenu();
+			renderMainMenu();
         };
         break;
         case STATE_CUSTOM_GAME: {
@@ -71,7 +71,7 @@ function draw() {
         };
         break;
         case STATE_CREDITS: {
-
+			renderCredits();
         };
         break;
         case STATE_IN_GAME: {

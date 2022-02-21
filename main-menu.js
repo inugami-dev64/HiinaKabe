@@ -16,7 +16,7 @@ let mainMenu_button_common = {
 	_numButtons: 3
 }
 
-let mainMenu_button_pvpGame = {
+let mainMenu_button_vanillaGame = {
     index: 0,
     label: "tavasätted",
     onClick: () => {
@@ -25,9 +25,9 @@ let mainMenu_button_pvpGame = {
             { enabled: true, isAI: false },
             { enabled: true, isAI: false },
             { enabled: true, isAI: false },
-            { enabled: true,    isAI: false },
-            { enabled: true,    isAI: false },
-            { enabled: true,    isAI: false },
+            { enabled: true, isAI: false },
+            { enabled: true, isAI: false },
+            { enabled: true, isAI: false },
         ]);
     },
 
@@ -35,7 +35,7 @@ let mainMenu_button_pvpGame = {
 	...BUTTON_COMMON,
 };
 
-let mainMenu_button_pvcGame = {
+let mainMenu_button_customGame = {
     index: 1,
     label: "kohandatud mäng",
     onClick: () => setState(STATE_CUSTOM_GAME),
@@ -47,6 +47,7 @@ let mainMenu_button_pvcGame = {
 let mainMenu_button_creditsGame = {
 	index: 2,
 	label: "koostajad",
+    onClick: () => setState(STATE_CREDITS),
 
 	...mainMenu_button_common,
 	...BUTTON_COMMON,
@@ -54,8 +55,8 @@ let mainMenu_button_creditsGame = {
 
 /* RENDERING */
 
-function drawMainMenu() {
-    drawButton(mainMenu_button_pvpGame);
-    drawButton(mainMenu_button_pvcGame);
+function renderMainMenu() {
+    drawButton(mainMenu_button_vanillaGame);
+    drawButton(mainMenu_button_customGame);
     drawButton(mainMenu_button_creditsGame);
 }

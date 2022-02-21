@@ -67,7 +67,7 @@ let BURRON_QUIT = {
     _padding: 32,
     step: 0,
     scale: 0,
-    onClick: () => { state = STATE_MAIN_MENU; },
+    onClick: () => { setState(STATE_MAIN_MENU); },
     x: function() { return this._width/2 + this._padding },
     y: function() { return windowHeight - this._height/2 - this._padding },
     w: function() { return this._width },
